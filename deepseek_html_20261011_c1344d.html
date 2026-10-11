@@ -188,6 +188,106 @@
   }
 
   .footer a:hover { text-decoration: underline; }
+
+  /* ============================================================
+     猎奇动效：一堆东西乱飞 + 抖动 + 故障闪烁
+     ============================================================ */
+
+  /* 乱飞层：铺满全屏、不挡点击 */
+  .chaos-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 50;
+  }
+
+  .fly {
+    position: absolute;
+    line-height: 1;
+    white-space: nowrap;
+    user-select: none;
+    will-change: transform, opacity;
+    filter: drop-shadow(0 0 6px rgba(188,140,255,.6));
+    font-weight: 700;
+  }
+
+  @keyframes fly-across {
+    0%   { transform: translate(0,0) rotate(0deg) scale(.5); opacity: 0; }
+    8%   { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(var(--sc)); opacity: 0; }
+  }
+
+  @keyframes spin-crazy {
+    from { transform: rotate(0deg) scale(1); }
+    50%  { transform: rotate(180deg) scale(1.5); }
+    to   { transform: rotate(360deg) scale(1); }
+  }
+
+  /* 故障闪烁（作用于副标题，避免破坏渐变标题） */
+  @keyframes glitch {
+    0%, 100% { transform: translate(0,0); text-shadow: 0 0 0 transparent; }
+    20% { transform: translate(-2px,1px); text-shadow: 2px 0 #f85149, -2px 0 #58a6ff; }
+    40% { transform: translate(2px,-1px); text-shadow: -2px 0 #bc8cff, 2px 0 #d29922; }
+    60% { transform: translate(-1px,-1px); text-shadow: 2px 0 #58a6ff, -2px 0 #f85149; }
+    80% { transform: translate(1px,1px); text-shadow: -2px 0 #2ea043, 2px 0 #bc8cff; }
+  }
+
+  header p { animation: glitch 2.6s infinite steps(1); }
+
+  /* 整页抖动（点“让我崩溃”时触发） */
+  @keyframes shake {
+    0%, 100% { transform: translate(0,0) rotate(0); }
+    20% { transform: translate(-5px,3px) rotate(-1.2deg); }
+    40% { transform: translate(5px,-3px) rotate(1.2deg); }
+    60% { transform: translate(-3px,-3px) rotate(-.6deg); }
+    80% { transform: translate(3px,2px) rotate(.6deg); }
+  }
+
+  .app.shake { animation: shake .16s infinite; }
+
+  /* 光敏提醒横幅 */
+  .seizure-warn {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 70;
+    background: #f85149;
+    color: #fff;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 12px;
+    box-shadow: 0 4px 18px rgba(248,81,73,.5);
+    animation: glitch 1.2s infinite steps(1);
+  }
+
+  /* 关闭动效的开关 */
+  .calm-toggle {
+    position: fixed;
+    top: 14px; left: 14px;
+    z-index: 60;
+    font-size: 12px;
+    color: #8b949e;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .calm-toggle:hover { color: #e6edf3; }
+
+  .btn.mad {
+    background: linear-gradient(90deg, #f85149, #bc8cff, #d29922, #58a6ff);
+    background-size: 300% 100%;
+    animation: rainbow 3s linear infinite;
+  }
+
+  @keyframes rainbow {
+    from { background-position: 0% 0; }
+    to   { background-position: 300% 0; }
+  }
 </style>
 </head>
 <body>
@@ -248,13 +348,25 @@
 
   <div class="footer">
     <p>仅供娱乐。请勿用于真实的崩溃日志伪造。</p>
+    <p>⚠️ 本页含闪烁、抖动与乱飞元素，光敏性癫痫 / 易晕动者慎入；点「💥 让我崩溃」前请三思。</p>
     <p>如果你因为本项目友尽，作者概不负责。</p>
     <p>—— 来自 <a href="#">Anti-Human Tests</a></p>
+    <p style="margin-top:10px;"><span class="calm-toggle" id="calmToggle">🧘 关闭猎奇动效</span></p>
   </div>
 
 </div>
 
-<div class="toast" id="toast">已复制到剪贴板</div>
+  <!-- 一堆东西乱飞的猎奇层 -->
+  <div class="chaos-layer" id="chaosLayer" aria-hidden="true"></div>
+
+  <!-- 光敏提醒（默认隐藏，点“让我崩溃”才出现） -->
+  <div class="seizure-warn" id="seizureWarn" style="display:none;">
+    ⚠️ 此按钮包含快速闪烁与剧烈抖动，光敏性癫痫 / 易晕动者请勿点击。
+  </div>
+
+  <button class="btn mad" id="madBtn" style="position:fixed; right:18px; bottom:18px; z-index:60;">💥 让我崩溃</button>
+
+  <div class="toast" id="toast">已复制到剪贴板</div>
 
 <script>
 /* ============================================================
@@ -582,10 +694,93 @@ function showToast(msg) {
    绑定
    ============================================================ */
 
+/* ============================================================
+   猎奇动效：一堆东西乱飞 + 整页抖动
+   ============================================================ */
+
+const FLY_THINGS = [
+  "💀", "💩", "🧦", "🌶️", "🔮", "🤡", "👻", "🤯", "🥴", "🙃",
+  "👁️", "🦠", "🪱", "💥", "🌀", "😵", "🫠", "🤮", "👽", "💢",
+  "咋滴", "崩了", "摆烂", "我不干", "重启人生", "光敏慎入", "???", "null",
+  "🐛", "🦟", "🪰", "🩸", "🧠", "💫", "⚡", "🔥", "❄️", "🍜",
+];
+
+let calmMode = false;
+let flyTimer = null;
+
+function spawnFly() {
+  if (calmMode) return;
+  const layer = $("chaosLayer");
+  const el = document.createElement("span");
+  el.className = "fly";
+  el.textContent = pick(FLY_THINGS);
+  const size = randInt(16, 56);
+  el.style.fontSize = size + "px";
+  el.style.left = randInt(0, 100) + "vw";
+  el.style.top = randInt(0, 100) + "vh";
+  const dx = randInt(-90, 90) + "vw";
+  const dy = randInt(-90, 90) + "vh";
+  const rot = randInt(-720, 720) + "deg";
+  const sc = (randInt(8, 28) / 10).toFixed(1);
+  el.style.setProperty("--dx", dx);
+  el.style.setProperty("--dy", dy);
+  el.style.setProperty("--rot", rot);
+  el.style.setProperty("--sc", sc);
+  el.style.animation = (Math.random() < 0.5 ? "fly-across " : "spin-crazy ") +
+    randInt(1, 4) + "s linear forwards";
+  layer.appendChild(el);
+  setTimeout(() => el.remove(), 4200);
+}
+
+function startChaos() {
+  if (calmMode) return;
+  if (flyTimer) return;
+  spawnFly();
+  flyTimer = setInterval(spawnFly, 140);
+}
+
+function stopChaos() {
+  if (flyTimer) { clearInterval(flyTimer); flyTimer = null; }
+  $("chaosLayer").innerHTML = "";
+}
+
+function goMad() {
+  if (calmMode) { showToast("动效已关闭，先点🧘开启"); return; }
+  $("seizureWarn").style.display = "block";
+  document.querySelector(".app").classList.add("shake");
+  startChaos();
+  for (let i = 0; i < 8; i++) spawnFly();
+  showToast("💥 你点了，现在大家都崩溃了");
+  setTimeout(() => {
+    stopChaos();
+    document.querySelector(".app").classList.remove("shake");
+  }, 5000);
+}
+
+function toggleCalm() {
+  calmMode = !calmMode;
+  const btn = $("calmToggle");
+  if (calmMode) {
+    stopChaos();
+    document.querySelector(".app").classList.remove("shake");
+    btn.textContent = "🌶️ 开启猎奇动效";
+    showToast("已开启平静模式");
+  } else {
+    btn.textContent = "🧘 关闭猎奇动效";
+    showToast("动效已开启，慎点💥");
+  }
+}
+
+/* ============================================================
+   绑定
+   ============================================================ */
+
 $("genBtn").onclick = generate;
 $("randBtn").onclick = randomize;
 $("copyBtn").onclick = copy;
 $("clearBtn").onclick = clearAll;
+$("madBtn").onclick = goMad;
+$("calmToggle").onclick = toggleCalm;
 
 // 初始生成一次
 generate();
