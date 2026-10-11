@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java 异常生成器 · 人类迷惑行为版</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Microsoft YaHei", sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  .app { width: 100%; max-width: 900px; }
+
+  header { text-align: center; margin-bottom: 22px; }
+
+  header h1 {
+    font-size: 24px;
+    background: linear-gradient(90deg, #58a6ff, #bc8cff, #ff7b72);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+
+  header p { color: #8b949e; font-size: 13px; }
+
+  .card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.35);
+    margin-bottom: 18px;
+  }
+
+  .card h2 {
+    font-size: 15px;
+    color: #c9d1d9;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card h2 .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #58a6ff;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+
+  .field label {
+    font-size: 12px;
+    color: #8b949e;
+    font-weight: 500;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: #e6edf3;
+    font-size: 13.5px;
+    font-family: inherit;
+    transition: border-color .15s ease;
+    width: 100%;
+  }
+
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    outline: none;
+    border-color: #58a6ff;
+  }
+
+  .field textarea {
+    resize: vertical;
+    min-height: 60px;
+    font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+    font-size: 13px;
+  }
+
+  .field select { cursor: pointer; }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 11px 22px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+
+  .btn.primary { background: linear-gradient(90deg, #238636, #2ea043); }
+  .btn.random  { background: linear-gradient(90deg, #8957e5, #bc8cff); }
+  .btn.copy    { background: linear-gradient(90deg, #1f6feb, #388bfd); }
+  .btn.clear   { background: linear-gradient(90deg, #6e7681, #8b949e); }
+
+  .preview {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 16px;
+    font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.75;
+    color: #c9d1d9;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    min-height: 200px;
+  }
+
+  .preview .err { color: #f85149; }
+  .preview .warn { color: #d29922; }
+  .preview .info { color: #58a6ff; }
+  .preview .dim { color: #8b949e; }
+  .preview .chaos { color: #bc8cff; }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #238636;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform .3s ease;
+    z-index: 9999;
+    box-shadow: 0 8px 30px rgba(0,0,0,.5);
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .footer {
+    text-align: center;
+    color: #8b949e;
+    font-size: 12px;
+    margin-top: 24px;
+    line-height: 1.8;
+  }
+
+  .footer a {
+    color: #58a6ff;
+    text-decoration: none;
+  }
+
+  .footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <h1>Java 异常生成器 · 人类迷惑行为版</h1>
+    <p>包名随便起，类名随便写，消息随便编。生成一段 Java 看了都想辞职的日志。</p>
+  </header>
+
+  <div class="card">
+    <h2><span class="dot"></span>自定义异常</h2>
+
+    <div class="grid">
+      <div class="field">
+        <label>包名（package）</label>
+        <input id="pkg" type="text" value="jerk.loser" placeholder="例如 jerk.loser">
+      </div>
+      <div class="field">
+        <label>类名（class）</label>
+        <input id="cls" type="text" value="看你不顺眼extortionate" placeholder="例如 看你不顺眼extortionate">
+      </div>
+      <div class="field">
+        <label>异常消息（message）</label>
+        <input id="msg" type="text" value="咋滴我就崩" placeholder="例如 咋滴我就崩">
+      </div>
+      <div class="field">
+        <label>Caused by 消息（可选）</label>
+        <input id="cause" type="text" value="Java被臭袜子熏死了" placeholder="例如 Java被臭袜子熏死了">
+      </div>
+      <div class="field">
+        <label>Caused by 的类名（可选）</label>
+        <input id="causeCls" type="text" value="🧦🧦🧦🧦臭袜子Ex" placeholder="例如 🧦🧦🧦🧦臭袜子Ex">
+      </div>
+      <div class="field">
+        <label>日志格式</label>
+        <select id="format">
+          <option value="bare">裸异常（printStackTrace）</option>
+          <option value="log4j">Log4j 风格</option>
+          <option value="forge">Forge/NeoForge 风格</option>
+          <option value="full">完整崩溃报告</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="genBtn">生成日志</button>
+      <button class="btn random" id="randBtn">🎲 随机生成</button>
+      <button class="btn copy" id="copyBtn">📋 复制</button>
+      <button class="btn clear" id="clearBtn">清空</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span>预览</h2>
+    <div class="preview" id="preview">点击“生成日志”看看效果。</div>
+  </div>
+
+  <div class="footer">
+    <p>仅供娱乐。请勿用于真实的崩溃日志伪造。</p>
+    <p>如果你因为本项目友尽，作者概不负责。</p>
+    <p>—— 来自 <a href="#">Anti-Human Tests</a></p>
+  </div>
+
+</div>
+
+<div class="toast" id="toast">已复制到剪贴板</div>
+
+<script>
+/* ============================================================
+   随机池：人类迷惑行为
+   ============================================================ */
+
+const RANDOM_PACKAGES = [
+  "jerk.loser",
+  "passive.aggressive",
+  "not.my.fault",
+  "drama.queen",
+  "chuunibyou",
+  "philosopher",
+  "worker",
+  "love",
+  "java.lang",
+  "com.example.mod",
+  "net.minecraft.world",
+  "org.spongepowered.asm.mixin",
+  "我也不知道.这是什么包",
+  "反正不是我写的.不关我事",
+];
+
+const RANDOM_CLASSES = [
+  "看你不顺眼extortionate",
+  "不服你打我Exception",
+  "关我屁事Error",
+  "你行你上Exception",
+  "哦是吗Exception",
+  "呵呵Error",
+  "随便你Exception",
+  "你开心就好Error",
+  "我也不知道什么错误Expection",
+  "🧦🧦🧦🧦臭袜子Ex",
+  "🌶️🌶️🌶️🌶️太辣Exception",
+  "🔮🔮🔮🔮玄学Exception",
+  "🤔🤔🤔🤔存在主义Exception",
+  "💀💀💀💀完蛋了Error",
+  "NullPointException",
+  "ArrayIndexOutOfBoundException",
+  "ClassNotFoundExpection",
+  "OutOfMemoryErrer",
+  "StackOverFlowError",
+  "IllegalArgumentExpection",
+];
+
+const RANDOM_MESSAGES = [
+  "咋滴我就崩",
+  "我就崩，你能咋地",
+  "又不是我写的代码",
+  "不行别 BB",
+  "那你可真厉害",
+  "你说是就是吧",
+  "反正我崩了",
+  "我不开心",
+  "大概是模组的问题吧",
+  "你自己看着办",
+  "别问我，我也很绝望",
+  "重启试试",
+  "我也不知道为什么崩了",
+  "你朋友在笑",
+  "快跑",
+  "记得想我",
+  "我不做JVM了",
+  "我累了",
+  "工资呢",
+  "你哄哄我",
+];
+
+const RANDOM_CAUSES = [
+  "Java被臭袜子熏死了",
+  "Java想静静",
+  "Java看不下去了",
+  "Java喝了口水",
+  "Java想吹空调",
+  "Java心情不好",
+  "Java开始思考自己为什么存在",
+  "Java发现自己只是个JVM",
+  "隔壁室友的鞋",
+  "三天没洗的袜子",
+  "楼上装修",
+  "室友打呼",
+  "朋友写的代码",
+  "没有缩进的 Python",
+  "一屏幕的 TODO",
+  "昨天吃的火锅",
+  "朋友的厨艺",
+  "笔记本散热口",
+  "连续跑了 8 小时的 MC",
+  "水逆",
+  "今天没看黄历",
+  "朋友昨天说了句“肯定不会崩”",
+];
+
+const RANDOM_ACTIONS = [
+  "选择了未响应",
+  "选择了摆烂",
+  "选择了辞职",
+  "选择了重启人生",
+  "选择了退出群聊",
+  "选择了删除朋友",
+  "选择了沉默",
+  "选择了离开这个世界",
+];
+
+const RANDOM_STACKS = [
+  "    at com.example.mod.某个类.某个方法(某个文件.java:??)",
+  "    at net.minecraft.world.???(???.java:???)",
+  "    at 反正不是我写的(不关我事.java:1)",
+  "    at Java 的鼻子(鼻子.java:404)",
+  "    at Java 的肺(肺.java:404)",
+  "    at Java 的灵魂(灵魂.java:404)",
+  "    at 阴阳怪气(阴阳怪气.java:1)",
+  "    at 摆烂(摆烂.java:1)",
+  "    at 爱咋咋地(爱咋咋地.java:1)",
+  "    at 别问我(我也很绝望.java:404)",
+  "    at 你猜(你猜.java:0)",
+  "    at 谁知道呢(谁知道呢.java:??)",
+];
+
+/* ============================================================
+   工具函数
+   ============================================================ */
+
+const $ = (id) => document.getElementById(id);
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function pick(arr) {
+  return arr[randInt(0, arr.length - 1)];
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/* ============================================================
+   生成日志
+   ============================================================ */
+
+function nowTime() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+}
+
+function buildBare(pkg, cls, msg, causeCls, causeMsg) {
+  let lines = [];
+  lines.push(`${pkg}.${cls}: ${msg}`);
+  lines.push(`    at com.example.mod.某个类.某个方法(某个文件.java:??)`);
+  lines.push(`    at net.minecraft.world.???(???.java:???)`);
+  lines.push(`    at 反正不是我写的(不关我事.java:1)`);
+  if (causeMsg) {
+    lines.push(`Caused by: ${pkg}.${causeCls}: ${causeMsg}`);
+    lines.push(`    at Java 的鼻子(鼻子.java:404)`);
+    lines.push(`    at Java 的灵魂(灵魂.java:404)`);
+    lines.push(`    ... 2 more`);
+  }
+  return lines.join("\n");
+}
+
+function buildLog4j(pkg, cls, msg, causeCls, causeMsg) {
+  const t = nowTime();
+  let lines = [];
+  lines.push(`[${t}] [main/INFO]: 正在加载模组...`);
+  lines.push(`[${t}] [main/WARN]: 检测到异常气味`);
+  lines.push(`[${t}] [main/ERROR]: ${pkg}.${cls}: ${msg}`);
+  lines.push(`    at com.example.mod.某个类.某个方法(某个文件.java:??)`);
+  lines.push(`    at net.minecraft.world.???(???.java:???)`);
+  if (causeMsg) {
+    lines.push(`Caused by: ${pkg}.${causeCls}: ${causeMsg}`);
+    lines.push(`    at Java 的鼻子(鼻子.java:404)`);
+  }
+  lines.push(`[${t}] [main/FATAL]: 游戏崩溃了`);
+  lines.push(`[${t}] [main/INFO]: 建议重启人生`);
+  return lines.join("\n");
+}
+
+function buildForge(pkg, cls, msg, causeCls, causeMsg) {
+  const t = nowTime();
+  let lines = [];
+  lines.push(`---- Minecraft Crash Report ----`);
+  lines.push(`// ${pick(RANDOM_MESSAGES)}`);
+  lines.push(``);
+  lines.push(`Time: ${new Date().toLocaleString()}`);
+  lines.push(`Description: ${msg}`);
+  lines.push(``);
+  lines.push(`${pkg}.${cls}: ${msg}`);
+  lines.push(`    at com.example.mod.某个类.某个方法(某个文件.java:??)`);
+  lines.push(`    at net.minecraft.world.???(???.java:???)`);
+  lines.push(`    at 反正不是我写的(不关我事.java:1)`);
+  if (causeMsg) {
+    lines.push(`Caused by: ${pkg}.${causeCls}: ${causeMsg}`);
+    lines.push(`    at Java 的鼻子(鼻子.java:404)`);
+  }
+  lines.push(``);
+  lines.push(`A detailed walkthrough of the error, its code path and all known details is as follows:`);
+  lines.push(`---------------------------------------------------------------------------------------`);
+  lines.push(``);
+  lines.push(`-- System Details --`);
+  lines.push(`    Minecraft Version: 1.20.我也不知道`);
+  lines.push(`    Java Version: 17.0.我也不知道`);
+  lines.push(`    Memory: 4096MB / 4096MB`);
+  lines.push(`    Memory: 不够`);
+  lines.push(`    Memory: 你加内存条吧`);
+  lines.push(`    Mod List: 太多了，不想列`);
+  return lines.join("\n");
+}
+
+function buildFull(pkg, cls, msg, causeCls, causeMsg) {
+  const t = nowTime();
+  let lines = [];
+  lines.push(`[${t}] [main/INFO]: 正在加载模组...`);
+  lines.push(`[${t}] [main/INFO]: 加载完成，共 1 个模组：朋友装的`);
+  lines.push(`[${t}] [main/WARN]: 检测到异常气味`);
+  lines.push(`[${t}] [main/ERROR]: ${pkg}.${cls}: ${msg}`);
+  lines.push(`    at com.example.mod.某个类.某个方法(某个文件.java:??)`);
+  lines.push(`    at net.minecraft.world.???(???.java:???)`);
+  lines.push(`    at 反正不是我写的(不关我事.java:1)`);
+  if (causeMsg) {
+    lines.push(`Caused by: ${pkg}.${causeCls}: ${causeMsg}`);
+    lines.push(`    at Java 的鼻子(鼻子.java:404)`);
+    lines.push(`    at Java 的肺(肺.java:404)`);
+    lines.push(`    at Java 的灵魂(灵魂.java:404)`);
+    lines.push(`Caused by: ${pick(RANDOM_ACTIONS)}`);
+    lines.push(`    at Windows 的弹窗(弹窗.exe:0)`);
+    lines.push(`    at 你朋友的朋友(朋友.java:1)`);
+  }
+  lines.push(`[${t}] [main/FATAL]: 游戏崩溃了`);
+  lines.push(`[${t}] [main/FATAL]: Java 也崩溃了`);
+  lines.push(`[${t}] [main/FATAL]: 你朋友也崩溃了`);
+  lines.push(`[${t}] [main/INFO]: 建议开窗通风`);
+  lines.push(`[${t}] [main/INFO]: 建议换袜子`);
+  lines.push(`[${t}] [main/INFO]: 建议重启人生`);
+  return lines.join("\n");
+}
+
+/* ============================================================
+   高亮
+   ============================================================ */
+
+function highlight(text) {
+  let html = escapeHtml(text);
+  // 错误行
+  html = html.replace(
+    /^([a-z][\w.]*\.[^\s:]+:.*)$/gm,
+    '<span class="err">$1</span>'
+  );
+  // Caused by
+  html = html.replace(/^(Caused by:.*)$/gm, '<span class="err">$1</span>');
+  // WARN
+  html = html.replace(/^(\[.*WARN\].*)$/gm, '<span class="warn">$1</span>');
+  // ERROR / FATAL
+  html = html.replace(/^(\[.*(ERROR|FATAL)\].*)$/gm, '<span class="err">$1</span>');
+  // INFO
+  html = html.replace(/^(\[.*INFO\].*)$/gm, '<span class="info">$1</span>');
+  // at 行
+  html = html.replace(/^(\s+at .*)$/gm, '<span class="dim">$1</span>');
+  // // 注释
+  html = html.replace(/^(\/\/.*)$/gm, '<span class="chaos">$1</span>');
+  return html;
+}
+
+/* ============================================================
+   主逻辑
+   ============================================================ */
+
+function generate() {
+  const pkg = $("pkg").value.trim() || "java.lang";
+  const cls = $("cls").value.trim() || "Exception";
+  const msg = $("msg").value.trim() || "null";
+  const causeCls = $("causeCls").value.trim();
+  const causeMsg = $("cause").value.trim();
+  const format = $("format").value;
+
+  let text;
+  if (format === "bare") {
+    text = buildBare(pkg, cls, msg, causeCls, causeMsg);
+  } else if (format === "log4j") {
+    text = buildLog4j(pkg, cls, msg, causeCls, causeMsg);
+  } else if (format === "forge") {
+    text = buildForge(pkg, cls, msg, causeCls, causeMsg);
+  } else {
+    text = buildFull(pkg, cls, msg, causeCls, causeMsg);
+  }
+
+  $("preview").innerHTML = highlight(text);
+}
+
+function randomize() {
+  $("pkg").value = pick(RANDOM_PACKAGES);
+  $("cls").value = pick(RANDOM_CLASSES);
+  $("msg").value = pick(RANDOM_MESSAGES);
+  $("cause").value = pick(RANDOM_CAUSES) + "，" + pick(RANDOM_ACTIONS);
+  $("causeCls").value = pick(RANDOM_CLASSES);
+  generate();
+}
+
+function copy() {
+  const text = $("preview").innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    showToast("已复制到剪贴板");
+  }).catch(() => {
+    showToast("复制失败，请手动选择");
+  });
+}
+
+function clearAll() {
+  $("preview").innerHTML = "点击“生成日志”看看效果。";
+}
+
+function showToast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2000);
+}
+
+/* ============================================================
+   绑定
+   ============================================================ */
+
+$("genBtn").onclick = generate;
+$("randBtn").onclick = randomize;
+$("copyBtn").onclick = copy;
+$("clearBtn").onclick = clearAll;
+
+// 初始生成一次
+generate();
+</script>
+</body>
+</html>
