@@ -16,9 +16,10 @@
     display: flex;
     justify-content: center;
     padding: 24px 16px;
+    overflow-x: hidden;
   }
 
-  .app { width: 100%; max-width: 900px; }
+  .app { width: 100%; max-width: 900px; position: relative; z-index: 1; }
 
   header { text-align: center; margin-bottom: 22px; }
 
@@ -204,6 +205,61 @@
     z-index: 50;
   }
 
+  /* 闪烁乱码背景层：铺满全屏、不挡点击、置于内容之下 */
+  .glitch-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    background: #0d1117;
+    font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+    font-size: 14px;
+    line-height: 1.1;
+    white-space: pre;
+    word-break: break-all;
+    color: #161b22;
+    text-shadow: 0 0 6px rgba(88,166,255,.25), 0 0 10px rgba(188,140,255,.18);
+    opacity: .55;
+    user-select: none;
+    mix-blend-mode: screen;
+    animation: bg-flicker .18s steps(2) infinite;
+  }
+
+  @keyframes bg-flicker {
+    0%   { opacity: .50; filter: hue-rotate(0deg)   brightness(1); }
+    25%  { opacity: .62; filter: hue-rotate(40deg)  brightness(1.3); }
+    50%  { opacity: .40; filter: hue-rotate(120deg) brightness(.8); }
+    75%  { opacity: .66; filter: hue-rotate(220deg) brightness(1.5); }
+    100% { opacity: .52; filter: hue-rotate(320deg) brightness(1); }
+  }
+
+  /* 全屏故障覆盖层（点「📺 全屏故障」触发） */
+  .glitch-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(0deg, rgba(248,81,73,.25) 0 6px, transparent 6px 14px),
+      repeating-linear-gradient(90deg, rgba(88,166,255,.2) 0 12px, transparent 12px 28px);
+    mix-blend-mode: screen;
+    animation: overlay-glitch .12s steps(2) infinite;
+  }
+
+  @keyframes overlay-glitch {
+    0%   { transform: translate(0,0) scale(1); filter: hue-rotate(0deg); }
+    50%  { transform: translate(-6px,4px) scale(1.04); filter: hue-rotate(160deg); }
+    100% { transform: translate(5px,-3px) scale(.98); filter: hue-rotate(300deg); }
+  }
+
+  /* 反色闪屏（点「🌈 反色闪屏」触发） */
+  body.invert { animation: invert-flash .25s steps(1) infinite; }
+  @keyframes invert-flash {
+    0%, 100% { filter: invert(0) hue-rotate(0deg); }
+    50%      { filter: invert(1) hue-rotate(180deg); }
+  }
+
   .fly {
     position: absolute;
     line-height: 1;
@@ -350,6 +406,17 @@
     <div class="preview" id="preview">点击“生成日志”看看效果。</div>
   </div>
 
+  <div class="card" id="chaosConsole" style="display:none; border-color:#bc8cff;">
+    <h2><span class="dot" style="background:#bc8cff;"></span>混沌控制台 <span style="font-size:11px;color:#8b949e;">(确认后才开放)</span></h2>
+    <div class="actions">
+      <button class="btn mad" id="madBtn2">💥 再崩一次</button>
+      <button class="btn random" id="spawnBtn">🌀 召唤乱码雨</button>
+      <button class="btn copy" id="glitchBtn">📺 全屏故障</button>
+      <button class="btn sample" id="invertBtn">🌈 反色闪屏</button>
+      <button class="btn clear" id="stopBtn">⏹ 停止全部动效</button>
+    </div>
+  </div>
+
   <div class="footer">
     <p>仅供娱乐。请勿用于真实的崩溃日志伪造。</p>
     <p>⚠️ 本页含闪烁、抖动与乱飞元素，光敏性癫痫 / 易晕动者慎入；点「💥 让我崩溃」前请三思。</p>
@@ -362,6 +429,9 @@
 
   <!-- 一堆东西乱飞的猎奇层 -->
   <div class="chaos-layer" id="chaosLayer" aria-hidden="true"></div>
+
+  <!-- 闪烁乱码背景 -->
+  <div class="glitch-bg" id="glitchBg" aria-hidden="true"></div>
 
   <!-- 光敏提醒（默认隐藏，点“让我崩溃”才出现） -->
   <div class="seizure-warn" id="seizureWarn" style="display:none;">
@@ -406,9 +476,48 @@ function _f(){if(_cm)return;var ly=_q("chaosLayer"),el=document.createElement("s
 function _k(){if(_cm||_ft)return;_f();_ft=setInterval(_f,140);}
 function _m(){if(_ft){clearInterval(_ft);_ft=null;}_q("chaosLayer").innerHTML="";}
 function _w0(){alert("光敏性癫痫患者绝对不要点！\n\n出事了作者概不负责。");if(_cm){_s("动效已关闭，先点🧘开启");return;}_q("seizureWarn").style.display="block";document.querySelector(".app").classList.add("shake");_k();var i;for(i=0;i<8;i++)_f();_s("💥 你点了，现在大家都崩溃了");setTimeout(function(){_m();document.querySelector(".app").classList.remove("shake");},5000);}
-function _v(){_cm=!_cm;var b=_q("calmToggle");if(_cm){_m();document.querySelector(".app").classList.remove("shake");b.textContent="🌶️ 开启猎奇动效";_s("已开启平静模式");}else{b.textContent="🧘 关闭猎奇动效";_s("动效已开启，慎点💥");}}
+function _v(){_cm=!_cm;var b=_q("calmToggle");if(_cm){_m();_gbStop();_glitchOverlay(false);_invert(false);document.querySelector(".app").classList.remove("shake");b.textContent="🌶️ 开启猎奇动效";_s("已开启平静模式");}else{b.textContent="🧘 关闭猎奇动效";_s("动效已开启，慎点💥");}}
 
-_q("genBtn").onclick=_g;_q("randBtn").onclick=_z;_q("sampleBtn").onclick=_x0;_q("copyBtn").onclick=_c;_q("clearBtn").onclick=_a;_q("madBtn").onclick=_w0;_q("calmToggle").onclick=_v;_g();
+/* 闪烁乱码背景：持续随机刷新字符 */
+var _GB="▓▒░#@%&*+=<>/\\|01あいうえお漢字崩壞ABCXYZ∑∆Ω☠👾🌀🐍♨🔥🧦💀乱码崩溃混沌反人类测试",
+    _gbTimer=null;
+function _gbFill(){
+  var cols=Math.floor(window.innerWidth/9)+2, rows=Math.floor(window.innerHeight/16)+2, t="", x,y;
+  for(y=0;y<rows;y++){
+    for(x=0;x<cols;x++){ t+=_GB.charAt(_r(0,_GB.length-1)); }
+    t+="\n";
+  }
+  _q("glitchBg").textContent=t;
+}
+function _gbStart(){ if(_gbTimer)return; _gbFill(); _gbTimer=setInterval(_gbFill,120); }
+function _gbStop(){ if(_gbTimer){clearInterval(_gbTimer);_gbTimer=null;} _q("glitchBg").textContent=""; }
+
+/* 全屏故障 / 反色闪屏 / 停止全部 */
+function _glitchOverlay(on){ var o=_q("glitchOverlay"); if(on){ if(!o){ o=document.createElement("div"); o.className="glitch-overlay"; o.id="glitchOverlay"; document.body.appendChild(o);} } else if(o){ o.remove(); } }
+function _invert(on){ if(on){ document.body.classList.add("invert"); } else { document.body.classList.remove("invert"); } }
+function _stopAll(){ _m(); _gbStop(); _glitchOverlay(false); _invert(false); document.querySelector(".app").classList.remove("shake"); _s("已全部停止"); }
+
+_q("genBtn").onclick=_g;_q("randBtn").onclick=_z;_q("sampleBtn").onclick=_x0;_q("copyBtn").onclick=_c;_q("clearBtn").onclick=_a;_q("madBtn").onclick=_w0;_q("calmToggle").onclick=_v;
+_q("madBtn2").onclick=function(){_w0();};
+_q("spawnBtn").onclick=function(){ if(_cm){_s("动效已关闭，先点🧘开启");return;} _k(); _s("🌀 乱码雨来了"); };
+_q("glitchBtn").onclick=function(){ if(_cm){_s("动效已关闭，先点🧘开启");return;} _glitchOverlay(true); setTimeout(function(){_glitchOverlay(false);},3200); _s("📺 全屏故障！"); };
+_q("invertBtn").onclick=function(){ if(_cm){_s("动效已关闭，先点🧘开启");return;} _invert(true); setTimeout(function(){_invert(false);},2600); _s("🌈 反色闪屏！"); };
+_q("stopBtn").onclick=_stopAll;
+_g();
+
+/* 进入网页：先警告 + 确认，确认后才开放混沌控件并启动闪烁乱码背景 */
+function _enter(){
+  var ok=confirm("⚠️ 警告\n\n本页含快速闪烁、抖动、乱码背景与猎奇动效，可能诱发光敏性癫痫或眩晕。\n\n你确认要进入并开启混沌控件吗？\n（点「取消」将保持安静模式，不显示乱码背景）");
+  if(ok){
+    _q("chaosConsole").style.display="block";
+    _gbStart();
+    _s("混沌已开启，慎点💥");
+  }else{
+    _q("chaosConsole").style.display="none";
+    _s("已保持安静模式");
+  }
+}
+if(typeof window!=="undefined"){ if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded",_enter); } else { _enter(); } }
 function _nope(){var z=0,i;for(i=0;i<3;i++){z=z+i;}return z;}
 })();
 </script>
