@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Java 异常生成器 · 人类迷惑行为版</title>
+<title>Anti-Human Tests · Java 异常生成器</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -31,7 +31,8 @@
     margin-bottom: 6px;
   }
 
-  header p { color: #8b949e; font-size: 13px; }
+  header .sub { color: #8b949e; font-size: 13px; }
+  header .warnline { color: #d29922; font-size: 12px; margin-top: 6px; letter-spacing: .3px; }
 
   .card {
     background: #161b22;
@@ -133,6 +134,7 @@
   .btn.primary { background: linear-gradient(90deg, #238636, #2ea043); }
   .btn.random  { background: linear-gradient(90deg, #8957e5, #bc8cff); }
   .btn.copy    { background: linear-gradient(90deg, #1f6feb, #388bfd); }
+  .btn.sample  { background: linear-gradient(90deg, #db61a2, #f778ba); }
   .btn.clear   { background: linear-gradient(90deg, #6e7681, #8b949e); }
 
   .preview {
@@ -234,7 +236,7 @@
     80% { transform: translate(1px,1px); text-shadow: -2px 0 #2ea043, 2px 0 #bc8cff; }
   }
 
-  header p { animation: glitch 2.6s infinite steps(1); }
+  header .sub { animation: glitch 2.6s infinite steps(1); }
 
   /* 整页抖动（点“让我崩溃”时触发） */
   @keyframes shake {
@@ -294,8 +296,9 @@
 <div class="app">
 
   <header>
-    <h1>Java 异常生成器 · 人类迷惑行为版</h1>
-    <p>包名随便起，类名随便写，消息随便编。生成一段 Java 看了都想辞职的日志。</p>
+    <h1>Anti-Human Tests · Java 异常生成器</h1>
+    <p class="sub">包名随便起，类名随便写，消息随便编。生成一段 Java 看了都想辞职的日志。</p>
+    <p class="warnline">仅供娱乐，请勿用于伪造真实崩溃日志</p>
   </header>
 
   <div class="card">
@@ -336,6 +339,7 @@
     <div class="actions">
       <button class="btn primary" id="genBtn">生成日志</button>
       <button class="btn random" id="randBtn">🎲 随机生成</button>
+      <button class="btn sample" id="sampleBtn">📋 示例输出</button>
       <button class="btn copy" id="copyBtn">📋 复制</button>
       <button class="btn clear" id="clearBtn">清空</button>
     </div>
@@ -670,10 +674,24 @@ function randomize() {
   generate();
 }
 
+function fillExample() {
+  $("pkg").value = "jerk.loser";
+  $("cls").value = "看你不顺眼extortionate";
+  $("msg").value = "咋滴我就崩";
+  $("cause").value = "Java被臭袜子熏死了";
+  $("causeCls").value = "🧦🧦🧦🧦臭袜子Ex";
+  $("format").value = "full";
+  generate();
+}
+
 function copy() {
+  const btn = $("copyBtn");
   const text = $("preview").innerText;
   navigator.clipboard.writeText(text).then(() => {
+    const old = "📋 复制";
+    btn.textContent = "已复制 ✓";
     showToast("已复制到剪贴板");
+    setTimeout(() => { btn.textContent = old; }, 1600);
   }).catch(() => {
     showToast("复制失败，请手动选择");
   });
@@ -777,6 +795,7 @@ function toggleCalm() {
 
 $("genBtn").onclick = generate;
 $("randBtn").onclick = randomize;
+$("sampleBtn").onclick = fillExample;
 $("copyBtn").onclick = copy;
 $("clearBtn").onclick = clearAll;
 $("madBtn").onclick = goMad;
