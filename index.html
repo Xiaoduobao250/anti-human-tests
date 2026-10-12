@@ -2,525 +2,213 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anti-Human Tests · Java 异常生成器</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-                 "Microsoft YaHei", sans-serif;
-    background: #0d1117;
-    color: #e6edf3;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    padding: 24px 16px;
-    overflow-x: hidden;
-  }
-
-  .app { width: 100%; max-width: 900px; position: relative; z-index: 1; }
-
-  header { text-align: center; margin-bottom: 22px; }
-
-  header h1 {
-    font-size: 24px;
-    background: linear-gradient(90deg, #58a6ff, #bc8cff, #ff7b72);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 6px;
-  }
-
-  header .sub { color: #8b949e; font-size: 13px; }
-  header .warnline { color: #d29922; font-size: 12px; margin-top: 6px; letter-spacing: .3px; }
-
-  .card {
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 14px;
-    padding: 22px;
-    box-shadow: 0 8px 30px rgba(0,0,0,.35);
-    margin-bottom: 18px;
-  }
-
-  .card h2 {
-    font-size: 15px;
-    color: #c9d1d9;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .card h2 .dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: #58a6ff;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-
-  @media (max-width: 640px) {
-    .grid { grid-template-columns: 1fr; }
-  }
-
-  .field { display: flex; flex-direction: column; gap: 6px; }
-
-  .field label {
-    font-size: 12px;
-    color: #8b949e;
-    font-weight: 500;
-  }
-
-  .field input,
-  .field select,
-  .field textarea {
-    background: #0d1117;
-    border: 1px solid #30363d;
-    border-radius: 8px;
-    padding: 10px 12px;
-    color: #e6edf3;
-    font-size: 13.5px;
-    font-family: inherit;
-    transition: border-color .15s ease;
-    width: 100%;
-  }
-
-  .field input:focus,
-  .field select:focus,
-  .field textarea:focus {
-    outline: none;
-    border-color: #58a6ff;
-  }
-
-  .field textarea {
-    resize: vertical;
-    min-height: 60px;
-    font-family: "SFMono-Regular", Consolas, Menlo, monospace;
-    font-size: 13px;
-  }
-
-  .field select { cursor: pointer; }
-
-  .actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 18px;
-    flex-wrap: wrap;
-  }
-
-  .btn {
-    border: none;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 600;
-    padding: 11px 22px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all .15s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
-  .btn:active { transform: translateY(0); }
-
-  .btn.primary { background: linear-gradient(90deg, #238636, #2ea043); }
-  .btn.random  { background: linear-gradient(90deg, #8957e5, #bc8cff); }
-  .btn.copy    { background: linear-gradient(90deg, #1f6feb, #388bfd); }
-  .btn.sample  { background: linear-gradient(90deg, #db61a2, #f778ba); }
-  .btn.clear   { background: linear-gradient(90deg, #6e7681, #8b949e); }
-
-  .preview {
-    background: #0d1117;
-    border: 1px solid #21262d;
-    border-radius: 10px;
-    padding: 16px;
-    font-family: "SFMono-Regular", Consolas, Menlo, monospace;
-    font-size: 13px;
-    line-height: 1.75;
-    color: #c9d1d9;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    word-break: break-all;
-    min-height: 200px;
-  }
-
-  .preview .err { color: #f85149; }
-  .preview .warn { color: #d29922; }
-  .preview .info { color: #58a6ff; }
-  .preview .dim { color: #8b949e; }
-  .preview .chaos { color: #bc8cff; }
-
-  .toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: #238636;
-    color: #fff;
-    padding: 12px 24px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    transition: transform .3s ease;
-    z-index: 9999;
-    box-shadow: 0 8px 30px rgba(0,0,0,.5);
-  }
-
-  .toast.show { transform: translateX(-50%) translateY(0); }
-
-  .footer {
-    text-align: center;
-    color: #8b949e;
-    font-size: 12px;
-    margin-top: 24px;
-    line-height: 1.8;
-  }
-
-  .footer a {
-    color: #58a6ff;
-    text-decoration: none;
-  }
-
-  .footer a:hover { text-decoration: underline; }
-
-  /* ============================================================
-     猎奇动效：一堆东西乱飞 + 抖动 + 故障闪烁
-     ============================================================ */
-
-  /* 乱飞层：铺满全屏、不挡点击 */
-  .chaos-layer {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    overflow: hidden;
-    z-index: 50;
-  }
-
-  /* 闪烁乱码背景层：铺满全屏、不挡点击、置于内容之下 */
-  .glitch-bg {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    overflow: hidden;
-    background: #0d1117;
-    font-family: "SFMono-Regular", Consolas, Menlo, monospace;
-    font-size: 14px;
-    line-height: 1.1;
-    white-space: pre;
-    word-break: break-all;
-    color: #161b22;
-    text-shadow: 0 0 6px rgba(88,166,255,.25), 0 0 10px rgba(188,140,255,.18);
-    opacity: .55;
-    user-select: none;
-    mix-blend-mode: screen;
-    animation: bg-flicker .18s steps(2) infinite;
-  }
-
-  @keyframes bg-flicker {
-    0%   { opacity: .50; filter: hue-rotate(0deg)   brightness(1); }
-    25%  { opacity: .62; filter: hue-rotate(40deg)  brightness(1.3); }
-    50%  { opacity: .40; filter: hue-rotate(120deg) brightness(.8); }
-    75%  { opacity: .66; filter: hue-rotate(220deg) brightness(1.5); }
-    100% { opacity: .52; filter: hue-rotate(320deg) brightness(1); }
-  }
-
-  /* 全屏故障覆盖层（点「📺 全屏故障」触发） */
-  .glitch-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 70;
-    pointer-events: none;
-    background:
-      repeating-linear-gradient(0deg, rgba(248,81,73,.25) 0 6px, transparent 6px 14px),
-      repeating-linear-gradient(90deg, rgba(88,166,255,.2) 0 12px, transparent 12px 28px);
-    mix-blend-mode: screen;
-    animation: overlay-glitch .12s steps(2) infinite;
-  }
-
-  @keyframes overlay-glitch {
-    0%   { transform: translate(0,0) scale(1); filter: hue-rotate(0deg); }
-    50%  { transform: translate(-6px,4px) scale(1.04); filter: hue-rotate(160deg); }
-    100% { transform: translate(5px,-3px) scale(.98); filter: hue-rotate(300deg); }
-  }
-
-  /* 反色闪屏（点「🌈 反色闪屏」触发） */
-  body.invert { animation: invert-flash .25s steps(1) infinite; }
-  @keyframes invert-flash {
-    0%, 100% { filter: invert(0) hue-rotate(0deg); }
-    50%      { filter: invert(1) hue-rotate(180deg); }
-  }
-
-  .fly {
-    position: absolute;
-    line-height: 1;
-    white-space: nowrap;
-    user-select: none;
-    will-change: transform, opacity;
-    filter: drop-shadow(0 0 6px rgba(188,140,255,.6));
-    font-weight: 700;
-  }
-
-  @keyframes fly-across {
-    0%   { transform: translate(0,0) rotate(0deg) scale(.5); opacity: 0; }
-    8%   { opacity: 1; }
-    90%  { opacity: 1; }
-    100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(var(--sc)); opacity: 0; }
-  }
-
-  @keyframes spin-crazy {
-    from { transform: rotate(0deg) scale(1); }
-    50%  { transform: rotate(180deg) scale(1.5); }
-    to   { transform: rotate(360deg) scale(1); }
-  }
-
-  /* 故障闪烁（作用于副标题，避免破坏渐变标题） */
-  @keyframes glitch {
-    0%, 100% { transform: translate(0,0); text-shadow: 0 0 0 transparent; }
-    20% { transform: translate(-2px,1px); text-shadow: 2px 0 #f85149, -2px 0 #58a6ff; }
-    40% { transform: translate(2px,-1px); text-shadow: -2px 0 #bc8cff, 2px 0 #d29922; }
-    60% { transform: translate(-1px,-1px); text-shadow: 2px 0 #58a6ff, -2px 0 #f85149; }
-    80% { transform: translate(1px,1px); text-shadow: -2px 0 #2ea043, 2px 0 #bc8cff; }
-  }
-
-  header .sub { animation: glitch 2.6s infinite steps(1); }
-
-  /* 整页抖动（点“让我崩溃”时触发） */
-  @keyframes shake {
-    0%, 100% { transform: translate(0,0) rotate(0); }
-    20% { transform: translate(-5px,3px) rotate(-1.2deg); }
-    40% { transform: translate(5px,-3px) rotate(1.2deg); }
-    60% { transform: translate(-3px,-3px) rotate(-.6deg); }
-    80% { transform: translate(3px,2px) rotate(.6deg); }
-  }
-
-  .app.shake { animation: shake .16s infinite; }
-
-  /* 光敏提醒横幅 */
-  .seizure-warn {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 70;
-    background: #f85149;
-    color: #fff;
-    text-align: center;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 8px 12px;
-    box-shadow: 0 4px 18px rgba(248,81,73,.5);
-    animation: glitch 1.2s infinite steps(1);
-  }
-
-  /* 关闭动效的开关 */
-  .calm-toggle {
-    position: fixed;
-    top: 14px; left: 14px;
-    z-index: 60;
-    font-size: 12px;
-    color: #8b949e;
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 8px;
-    padding: 6px 10px;
-    cursor: pointer;
-    user-select: none;
-  }
-  .calm-toggle:hover { color: #e6edf3; }
-
-  .btn.mad {
-    background: linear-gradient(90deg, #f85149, #bc8cff, #d29922, #58a6ff);
-    background-size: 300% 100%;
-    animation: rainbow 3s linear infinite;
-  }
-
-  @keyframes rainbow {
-    from { background-position: 0% 0; }
-    to   { background-position: 300% 0; }
-  }
-</style>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>技术学习资源中心 · 学习资料库</title>
+<meta name="description" content="一个平平无奇的技术学习资源中心，包含练习题、示例页面与开发工具。">
+<link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-<div class="app">
+<nav class="ahnav" id="ahNav"></nav>
 
-  <header>
-    <h1>Anti-Human Tests · Java 异常生成器</h1>
-    <p class="sub">包名随便起，类名随便写，消息随便编。生成一段 Java 看了都想辞职的日志。</p>
-    <p class="warnline">仅供娱乐，请勿用于伪造真实崩溃日志</p>
-  </header>
+<div class="wrap">
+
+  <div class="warnline" id="hubWarn">
+    ℹ️ 本站收录各类编程练习与演示页面，内容仅供参考，请结合官方文档学习。
+  </div>
 
   <div class="card">
-    <h2><span class="dot"></span>自定义异常</h2>
-
-    <div class="grid">
-      <div class="field">
-        <label>包名（package）</label>
-        <input id="pkg" type="text" value="jerk.loser" placeholder="例如 jerk.loser">
-      </div>
-      <div class="field">
-        <label>类名（class）</label>
-        <input id="cls" type="text" value="看你不顺眼extortionate" placeholder="例如 看你不顺眼extortionate">
-      </div>
-      <div class="field">
-        <label>异常消息（message）</label>
-        <input id="msg" type="text" value="咋滴我就崩" placeholder="例如 咋滴我就崩">
-      </div>
-      <div class="field">
-        <label>Caused by 消息（可选）</label>
-        <input id="cause" type="text" value="Java被臭袜子熏死了" placeholder="例如 Java被臭袜子熏死了">
-      </div>
-      <div class="field">
-        <label>Caused by 的类名（可选）</label>
-        <input id="causeCls" type="text" value="🧦🧦🧦🧦臭袜子Ex" placeholder="例如 🧦🧦🧦🧦臭袜子Ex">
-      </div>
-      <div class="field">
-        <label>日志格式</label>
-        <select id="format">
-          <option value="bare">裸异常（printStackTrace）</option>
-          <option value="log4j">Log4j 风格</option>
-          <option value="forge">Forge/NeoForge 风格</option>
-          <option value="full">完整崩溃报告</option>
-        </select>
-      </div>
+    <h1><span class="title-glitch" data-t="技术学习资源中心" id="hubTitle">技术学习资源中心</span>
+      <span class="badge ok" id="hubBadge">学习向</span>
+    </h1>
+    <p class="muted" id="hubDesc">收录练习题、示例页面与小工具，帮助你熟悉常见的报错与调试思路。</p>
+    <p class="small muted" id="hubNote">所有页面均可直接在浏览器中打开，无需安装任何环境。</p>
+    <div class="btnrow mt12">
+      <button class="btn" id="luckyBtn">🎲 随机来一个练习</button>
+      <button class="btn ghost" id="panicBtn">⏹ 停止页面动效</button>
+      <button class="btn ghost" id="spawnBtn" data-real="🌀 先飞点东西再说" data-disg="📄 查看示例集">📄 查看示例集</button>
     </div>
+  </div>
 
-    <div class="actions">
-      <button class="btn primary" id="genBtn">生成日志</button>
-      <button class="btn random" id="randBtn">🎲 随机生成</button>
-      <button class="btn sample" id="sampleBtn">📋 示例输出</button>
-      <button class="btn copy" id="copyBtn">📋 复制</button>
-      <button class="btn clear" id="clearBtn">清空</button>
+  <h2 id="hubListTitle">📚 练习与示例</h2>
+  <div class="grid auto" id="hubGrid"></div>
+
+  <div class="card mt12">
+    <h2 id="docsTitle">📖 文档</h2>
+    <div class="grid two">
+      <div>
+        <h3 id="docsA">🧭 学习方法</h3>
+        <p class="small muted">遇到报错先读日志、再定位层级，这是一套可以复用的方法论：<a href="docs/design-principles.md" id="docsALink">docs/design-principles.md</a></p>
+      </div>
+      <div>
+        <h3 id="docsB">💬 常见坑案例</h3>
+        <p class="small muted">其他学习者踩过的坑与复盘（均为教学示例）：<a href="docs/victim-stories.md" id="docsBLink">docs/victim-stories.md</a></p>
+      </div>
     </div>
   </div>
 
   <div class="card">
-    <h2><span class="dot"></span>预览</h2>
-    <div class="preview" id="preview">点击“生成日志”看看效果。</div>
-  </div>
-
-  <div class="card" id="chaosConsole" style="display:none; border-color:#bc8cff;">
-    <h2><span class="dot" style="background:#bc8cff;"></span>混沌控制台 <span style="font-size:11px;color:#8b949e;">(确认后才开放)</span></h2>
-    <div class="actions">
-      <button class="btn mad" id="madBtn2">💥 再崩一次</button>
-      <button class="btn random" id="spawnBtn">🌀 召唤乱码雨</button>
-      <button class="btn copy" id="glitchBtn">📺 全屏故障</button>
-      <button class="btn sample" id="invertBtn">🌈 反色闪屏</button>
-      <button class="btn clear" id="stopBtn">⏹ 停止全部动效</button>
-    </div>
-  </div>
-
-  <div class="footer">
-    <p>仅供娱乐。请勿用于真实的崩溃日志伪造。</p>
-    <p>⚠️ 本页含闪烁、抖动与乱飞元素，光敏性癫痫 / 易晕动者慎入；点「💥 让我崩溃」前请三思。</p>
-    <p>如果你因为本项目友尽，作者概不负责。</p>
-    <p>—— 来自 <a href="#">Anti-Human Tests</a></p>
-    <p style="margin-top:10px;"><span class="calm-toggle" id="calmToggle">🧘 关闭猎奇动效</span></p>
+    <h2 id="disclaimerTitle">🧾 关于本站</h2>
+    <p class="small" id="disclaimerBody">本站内容为练习与演示用途，页面中的日志、输出与场景均为教学示例，不指向任何真实项目。
+      数学练习的答案是认真的；示例页面的输出是编的。</p>
+    <p class="small muted">License: MIT · <a href="LICENSE">LICENSE</a> · <a href="CONTRIBUTING.md" id="contribLink">CONTRIBUTING.md</a></p>
   </div>
 
 </div>
 
-  <!-- 一堆东西乱飞的猎奇层 -->
-  <div class="chaos-layer" id="chaosLayer" aria-hidden="true"></div>
+<div class="foot">
+  <p id="footBrand">Tech Study Hub · 前端学习系列</p>
+  <p class="small" id="footNote">祝你学习顺利。</p>
+</div>
 
-  <!-- 闪烁乱码背景 -->
-  <div class="glitch-bg" id="glitchBg" aria-hidden="true"></div>
-
-  <!-- 光敏提醒（默认隐藏，点“让我崩溃”才出现） -->
-  <div class="seizure-warn" id="seizureWarn" style="display:none;">
-    ⚠️ 此按钮包含快速闪烁与剧烈抖动，光敏性癫痫 / 易晕动者请勿点击。
-  </div>
-
-  <button class="btn mad" id="madBtn" style="position:fixed; right:18px; bottom:18px; z-index:60;">💥 让我崩溃</button>
-
-  <div class="toast" id="toast">已复制到剪贴板</div>
-
+<script src="assets/chaos.js"></script>
 <script>
-(function(){
-"use strict";
-function _d(b){var s=atob(b),n=s.length,g=new Uint8Array(n),i;for(i=0;i<n;i++)g[i]=s.charCodeAt(i);return new TextDecoder("utf-8").decode(g);}
-var _w=_d("Y29tLmV4YW1wbGUubW9kAm5ldC5taW5lY3JhZnQud29ybGQCb3JnLnNwb25nZXBvd2VyZWQuYXNtLm1peGluAmlvLmdpdGh1Yi5zb21lb25lAmRldi5mcmljay50aGlzAm1lLmxhenkuY29kZXICY29tLmJ1Zy5ldmVyeXdoZXJlAm5ldC5ub3QubXkuZmF1bHQCb3JnLmNoYW9zLmluY2FybmF0ZQJjb20uc21lbGx5LnNvY2sCaW8udG91Y2guZ3Jhc3MCZGV2LmV4aXN0ZW50aWFsLmNyaXNpcwJqZXJrLmxvc2VyAnBhc3NpdmUuYWdncmVzc2l2ZQJub3QubXkuZmF1bHQCZHJhbWEucXVlZW4CcGhpbG9zb3BoZXICd29ya2VyAmxvdmUCamF2YS5sYW5nAVdoeUFyZVlvdUxpa2VUaGlzRXhjZXB0aW9uAk5vdE15RmF1bHRFcnJvcgJXaGF0ZXZlckR1ZGVFeGNlcHRpb24CT2hSZWFsbHlFeGNlcHRpb24CSGVoRXJyb3ICU3VpdFlvdXJzZWxmRXhjZXB0aW9uAklka1doYXRFcnJvckV4Y2VwdGlvbgJTbWVsbHlTb2NrRXgCVG9vU3BpY3lFeGNlcHRpb24CTXlzdGljQnVsbHNoKnRFeGNlcHRpb24CRXhpc3RlbnRpYWxDcmlzaXNFcnJvcgJJdHNPdmVyRXJyb3ICTnVsbFBvaW50ZXJFeGNlcHRpb24CQXJyYXlJbmRleE91dE9mQm91bmRzRXhjZXB0aW9uAkNsYXNzTm90Rm91bmRFeGNlcHRpb24CT3V0T2ZNZW1vcnlFcnJvcgJTdGFja092ZXJmbG93RXJyb3ICSWxsZWdhbEFyZ3VtZW50RXhjZXB0aW9uAkYqKmtXYXRlcm1lbG9uRXhjZXB0aW9uAlRvdWNoU29tZUdyYXNzRXhjZXB0aW9uAkJ1eVlvdXJPd25SYW1FcnJvcgJJbU91dHRhSGVyZUV4Y2VwdGlvbgJTb2NrT3ZlcmZsb3dFeGNlcHRpb24CQ2FmZmVpbmVOb3RGb3VuZEVycm9yAldoeUlzSXRBbHdheXNNZUV4Y2VwdGlvbgJCcmFpbk5vdEZvdW5kRXhjZXB0aW9uAlBlcm1pc3Npb25Ub0NyeUV4Y2VwdGlvbgJDYXRPbktleWJvYXJkRXhjZXB0aW9uAlBpenphV2FzQ29sZEV4Y2VwdGlvbgJHcmFzc1RvdWNoaW5nUmVxdWlyZWRFeGNlcHRpb24BZioqaywgaXQgY3Jhc2hlZAJ3aGF0IHRoZSBoKmxsIGhhcHBlbmVkAnNoKnQsIEkgYnJva2UgaXQCZCptbiB0aGlzIGNvZGViYXNlAmF3IGgqbGwgbm8sIG5vdCBhZ2FpbgJnKmRkKm1uIEpWTSBmaW5hbGx5IGdhdmUgdXACd2hvIGxldCB0aGlzIGNvbXBpbGUCbm9wZSwgSSdtIG91dAJ0aGlzIGlzIG5vdCBteSBwcm9ibGVtAmJsb29keSBoZWxsLCBpdCdzIG9uIGZpcmUCZnVkZ2UsIHJlc3RhcnQgd29uJ3QgaGVscAJnZWV6LCBjYWxtIGRvd24Cc29tZW9uZSBwcmVzc2VkIHRoZSB3cm9uZyBidXR0b24CdGhlIG1vZCBkaWQgaXQsIG5vdCBtZQJJIHF1aXQsIGZpbmQgYW5vdGhlciBKVk0Cd2h5IGlzIGV2ZXJ5dGhpbmcgb24gZmlyZQJ0aGlzIHN0YWNrIHRyYWNlIGlzIGEgd2FyIGNyaW1lAml0IGJ1aWxkcyBvbiBteSBtYWNoaW5lAmhhdmUgeW91IHRyaWVkIHR1cm5pbmcgaXQgb2ZmIGFuZCBvbgJmKiprIHRoaXMsIEknbSBseWluZyBmbGF0IG5vdwLlhoXlrZjkuI3lpJ/oh6rlt7HljrvkubDvvIznnIvmiJHlubLlmJvvvJ8C55yL5oiR5bmy5Zib77yM5Y+I5LiN5piv5oiR5bSp55qEAuS9oOihjOS9oOS4iuWViu+8jOWIq+WFieeci+edgALmiJHoo4LlvIDkuobvvIzmlZHmlZHmiJEC6L+Z6ZSF5oiR5LiN6IOMAUphdmEgZ290IHN1ZmZvY2F0ZWQgYnkgYSBzbWVsbHkgc29jawJKYXZhIHdhbnRlZCBzb21lIHF1aWV0IHRpbWUCSmF2YSBjb3VsZG4ndCB0YWtlIGl0IGFueW1vcmUCSmF2YSB0b3VjaGVkIHRoZSBuZWlnaGJvcidzIHNob2UCSmF2YSBkcmFuayB0aGUgd3JvbmcgYm90dGxlAkphdmEgc3RhcnRlZCBxdWVzdGlvbmluZyBpdHMgZXhpc3RlbmNlAkphdmEgcmVhbGl6ZWQgaXQncyBqdXN0IGEgSlZNAnRoZSByb29tbWF0ZSdzIHNvY2tzIGZyb20gMyBkYXlzIGFnbwJ0aGUgdXBzdGFpcnMgcmVub3ZhdGlvbgJ0aGUgcm9vbW1hdGUncyBzbm9yaW5nAnRoZSBmcmllbmQncyBzcGFnaGV0dGkgY29kZQJhIFB5dGhvbiBmaWxlIHdpdGggemVybyBpbmRlbnRhdGlvbgJhIHNjcmVlbiBmdWxsIG9mIFRPRE9zAnllc3RlcmRheSdzIGhvdHBvdAJ0aGUgbGFwdG9wJ3MgaGVhdCBleGhhdXN0Ak1DIHJ1bm5pbmcgZm9yIDggaG91cnMgc3RyYWlnaHQCTWVyY3VyeSBpcyBpbiByZXRyb2dyYWRlAnNvbWVvbmUgc2FpZCAnaXQgd29uJ3QgY3Jhc2gnIHllc3RlcmRheQLkvaDlhpnnmoTku6PnoIHvvIjliKvotZbmiJHvvIkC6ZqU5aOB5a6k5Y+L5Y+I5Zyo5omT5ri45oiPAuS9oOaYqOWkqeivtOKAmOiCr+WumuS4jeS8muW0qeKAmQFjaG9zZSB0byBub3QgcmVzcG9uZAJjaG9zZSB0byBsaWUgZmxhdAJjaG9zZSB0byByZXNpZ24CY2hvc2UgdG8gcmVzdGFydCBsaWZlAmNob3NlIHRvIGxlYXZlIHRoZSBncm91cCBjaGF0AmNob3NlIHRvIGRlbGV0ZSBhIGZyaWVuZAJjaG9zZSBzaWxlbmNlAmNob3NlIHRvIGxlYXZlIHRoaXMgd29ybGQBTHlpbmdGbGF0AlNtZWxseVNvY2sCVG91Y2hHcmFzcwJFeGlzdGVudGlhbERyZWFkAlByb2NyYXN0aW5hdGlvbktpbmcCQ3J5aW5nSW5CaW5hcnkCV2hhdGV2ZXJEdWRlAlBhc3NpdmVBZ2dyZXNzaXZlAkRyYW1hUXVlZW4CUGhpbG9zb3BoZXICQ2hhb3NJbmNhcm5hdGUCTWVudGFsQnJlYWtkb3duAk5vb2RsZUJyaWRnZQJDcnlpbmdXb2xmAlNpbGVudFRyZWF0bWVudAJHaG9zdENvbW1pdAJSdWJiZXJTdGFtcAJFbXB0eVByb21pc2UCUmV2ZXJzZVVubwJMYXN0U3RyYXcCRG9uZVdpdGhUaGlzAlF1aWV0UXVpdHRpbmcCQnVybmluZ091dAJTdGFja092ZXJmbG93ZWQCTnVsbFBvaW50ZXJQYW5pYwFzaWdoZWQCcm9sbGVkRXllcwJzaHJ1Z2dlZAJmYWNlcGFsbWVkAmdhdmVVcAJ0b3VjaGVkR3Jhc3MCbGllZEZsYXQCcHJvY3Jhc3RpbmF0ZWQCZ2hvc3RlZAJjcmllZAJwYW5pY2tlZAJyZWJvb3RlZExpZmUCbGVmdEdyb3VwQ2hhdAJkZWxldGVkRnJpZW5kAndlbnRTaWxlbnQCcmFnZVF1aXQCc2NyZWFtZWRJbnRlcm5hbGx5Am5vcGVkT3V0AnNpbXBlZAJ2aWJlZAJjcmFzaGVkAmJyb2tlAm51bWJlZAJiaW5nZWQCZG9vbWVkAU1haW4uamF2YQJTb3VsLmphdmECU21lbGx5U29jay5qYXZhAkV4aXN0ZW50aWFsRHJlYWQuamF2YQJMeWluZ0ZsYXQuamF2YQJUb3VjaEdyYXNzLmphdmECTmVpZ2hib3JTaG9lLmphdmECUm9vbW1hdGVTbm9yZS5qYXZhAlVwc3RhaXJzUmVub3ZhdGlvbi5qYXZhAlNwYWdoZXR0aUNvZGUuamF2YQJaZXJvSW5kZW50UHl0aG9uLmphdmECU2NyZWVuT2ZUb2Rvcy5qYXZhAlllc3RlcmRheUhvdHBvdC5qYXZhAkhlYXRFeGhhdXN0LmphdmECRWlnaHRIb3VyTUMuamF2YQJNZXJjdXJ5UmV0cm9ncmFkZS5qYXZhAkZyaWVuZHNCYWRUYWtlLmphdmECV2h5TWUuamF2YQJEZWZpbml0ZWx5Tm90TWUuamF2YQJBd0hlbGxOby5qYXZhATQwNAIwAjECNjY2AjIzMwIyNTACOTk2AjUyMQIxMzE0AjIwNDgCNDICMTMCOTk5Ajk1MjcCMTAwODYCMTIzMDYCMjMzMzMCNjY2NjYCMjUwMjUwAjQwNDQwNAFmKiprAmNyYXNoAndoeQJhdyBoKmxsAm5vcGUCZypkZCptbgJzaCp0AmJsb29keSBoZWxsAmZ1ZGdlAmdlZXoC8J+NiQLwn4y/AuKYlQLwn5CxAvCfp6YC8J+SgALwn5KpAvCfjLbvuI8C8J+UrgLwn6ShAvCfkbsC8J+krwLwn6W0AvCfmYMC8J+Rge+4jwLwn6agAvCfqrEC8J+SpQLwn4yAAvCfmLUC8J+roALwn6SuAvCfkb0C8J+SogI/Pz8CbnVsbALwn5CbAvCfpp8C8J+qsALwn6m4AvCfp6AC8J+SqwLimqEC8J+UpQLinYTvuI8C8J+NnAFMb2FkaW5nIG1vZHMuLi4CRGV0ZWN0ZWQgc3VzcGljaW91cyBzbWVsbAJHYW1lIGNyYXNoZWQCTWlnaHQgYXMgd2VsbCByZXN0YXJ0IHlvdXIgbGlmZQJMb2FkZWQgMSBtb2Q6IGluc3RhbGxlZCBieSB5b3VyIGZyaWVuZAItLS0tIE1pbmVjcmFmdCBDcmFzaCBSZXBvcnQgLS0tLQJUaW1lOiACRGVzY3JpcHRpb246IAJBIGRldGFpbGVkIHdhbGt0aHJvdWdoIG9mIHRoZSBlcnJvciwgaXRzIGNvZGUgcGF0aCBhbmQgYWxsIGtub3duIGRldGFpbHMgaXMgYXMgZm9sbG93czoCLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tAi0tIFN5c3RlbSBEZXRhaWxzIC0tAiAgICBNaW5lY3JhZnQgVmVyc2lvbjogMS4yMC5pZGsCICAgIEphdmEgVmVyc2lvbjogMTcuMC5pZGsCICAgIE1lbW9yeTogNDA5Nk1CIC8gNDA5Nk1CAiAgICBNZW1vcnk6IG5vdCBlbm91Z2ggbG9sAiAgICBNZW1vcnk6IGdvIGJ1eSBtb3JlIFJBTQIgICAgTW9kIExpc3Q6IHRvbyBtYW55LCBjYW4ndCBiZSBib3RoZXJlZAJKYXZhIGNyYXNoZWQgdG9vAllvdXIgZnJpZW5kIGNyYXNoZWQgdG9vAk9wZW4gYSB3aW5kb3csIHNlcmlvdXNseQJDaGFuZ2UgeW91ciBzb2NrcywgcGxlYXNlAuWGheWtmOS4jeWkn++8n+iHquW3seWOu+S5sALnnIvmiJHlubLlmJsC6L+ZIGJ1ZyDlj4jkuI3mmK/miJHlhpnnmoQ=");
-var _x=_w.split(String.fromCharCode(1));
-var _P=_x[0].split(String.fromCharCode(2)),_C=_x[1].split(String.fromCharCode(2)),_M=_x[2].split(String.fromCharCode(2)),_U=_x[3].split(String.fromCharCode(2)),_A=_x[4].split(String.fromCharCode(2)),_S=_x[5].split(String.fromCharCode(2)),_H=_x[6].split(String.fromCharCode(2)),_I=_x[7].split(String.fromCharCode(2)),_N=_x[8].split(String.fromCharCode(2)),_F=_x[9].split(String.fromCharCode(2)),_L=_x[10].split(String.fromCharCode(2));
+AH.init({ title: "技术学习资源中心", page: "/" });
 
-var _q=function(id){return document.getElementById(id);};
-function _r(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
-function _p(a){return a[_r(0,a.length-1)];}
-function _e(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-function _t(){var d=new Date(),p=function(n){return String(n).padStart(2,"0");};return p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());}
-function _sk(n){var o=[],i;for(i=0;i<n;i++){o.push("    at "+_p(_S)+"."+_p(_H)+"("+_p(_I)+":"+_p(_N)+")");}return o;}
+/* ===================== 双面数据 ===================== */
+var DISGUISE_PAGES = [
+  ["mc-crash/index.html",      "⛏️ MC 报错排查练习",     "四个模组里找出报错来源。从基础日志读起，逐步升级难度。", "日志 / 排查"],
+  ["cpp-quiz/index.html",      "📋 报错定位能力测评",     "18 道日志诊断题，答完即时给出解析与正确答案。", "测评"],
+  ["number-theory/index.html", "🔢 数论练习",            "费马小定理、欧拉函数、中国剩余定理等经典主题，附完整推导。", "数学"],
+  ["combinatorics/index.html", "🎲 组合练习",            "错排、卡特兰数、容斥原理，附帕斯卡三角与生日悖论计算器。", "数学"],
+  ["fake-crash/index.html",    "📄 日志示例生成器",       "查看各类崩溃日志的结构示例，用于熟悉报错格式。", "示例"],
+  ["fake-console/index.html",  "🖥️ 服务器控制台演示",     "一个模拟服务器控制台的交互演示，可尝试常见指令。", "演示"],
+  ["fake-download/index.html", "📥 下载页交互演示",       "一个模拟下载进度的交互演示，展示常见的页面交互模式。", "演示"],
+  ["java-crash/index.html",    "☕ 日志生成工具",          "按格式生成示例 Java 异常日志，用于练习阅读堆栈。", "工具"]
+];
+var REAL_PAGES = [
+  ["mc-crash/index.html",        "⛏️ MC 崩溃处理大挑战", "给你一份崩溃日志，你要在 4 个版本里找出唯一的真凶。正经版 / 反套路版 / 混合套路版 / 混沌版。", "MC / 推理"],
+  ["cpp-quiz/index.html",        "📋 MC 崩溃处理能力评估", "18 道崩溃日志诊断。所有 A/B/C/D 都是错的，正确答案藏在 E 里，而 E 只有 20% 概率出现。", "MC / 测验"],
+  ["number-theory/index.html",   "🔢 数论测试",          "费马、欧拉、中国剩余定理、二次剩余。答不出来就别自称会取模。", "数学 / 数论"],
+  ["combinatorics/index.html",   "🎲 组合测试",          "错排、卡特兰、容斥、鸽巢。附带帕斯卡三角、生日悖论与卡特兰数计算器。", "数学 / 组合"],
+  ["fake-crash/index.html",      "💥 假 MC 崩溃页面",    "一键生成以假乱真的 Minecraft 崩溃报告。仅供娱乐，别拿去甩锅。", "假页面"],
+  ["fake-console/index.html",    "🖥️ 假 MC 控制台",      "一个会对你说的话做出反应的假服务器控制台。试试输入 help，或者 crash。", "假页面"],
+  ["fake-download/index.html",   "📥 假下载页面",        "下载进度永远卡在 87%。讽刺所有流氓下载站，但不会真的下载任何东西。", "假页面"],
+  ["java-crash/index.html",      "☕ Java 异常生成器",    "生成人类迷惑行为版 Java 异常日志，含猎奇异常对（F**kWatermelonException 等）。", "工具"]
+];
 
-function _b0(pkg,cls,msg,cc,cm){var L=[];L.push(pkg+"."+cls+": "+msg);_sk(3).forEach(function(l){L.push(l);});if(cm){L.push("Caused by: "+pkg+"."+cc+": "+cm);_sk(2).forEach(function(l){L.push(l);});L.push("    ... "+_p(_N)+" more");}return L.join("\n");}
-function _b1(pkg,cls,msg,cc,cm){var t=_t(),L=[];L.push("["+t+"] [main/INFO]: "+_L[0]);L.push("["+t+"] [main/WARN]: "+_L[1]);L.push("["+t+"] [main/ERROR]: "+pkg+"."+cls+": "+msg);_sk(3).forEach(function(l){L.push(l);});if(cm){L.push("Caused by: "+pkg+"."+cc+": "+cm);_sk(1).forEach(function(l){L.push(l);});}L.push("["+t+"] [main/FATAL]: "+_L[2]);L.push("["+t+"] [main/INFO]: "+_L[3]);return L.join("\n");}
-function _b2(pkg,cls,msg,cc,cm){var t=_t(),L=[];L.push(_L[5]);L.push("// "+_p(_M));L.push("");L.push(_L[6]+new Date().toLocaleString());L.push(_L[7]+msg);L.push("");L.push(pkg+"."+cls+": "+msg);_sk(3).forEach(function(l){L.push(l);});if(cm){L.push("Caused by: "+pkg+"."+cc+": "+cm);_sk(1).forEach(function(l){L.push(l);});}L.push("");L.push(_L[8]);L.push(_L[9]);L.push("");L.push(_L[10]);L.push(_L[11]);L.push(_L[12]);L.push(_L[13]);L.push(_L[14]);L.push(_L[15]);L.push(_L[16]);return L.join("\n");}
-function _b3(pkg,cls,msg,cc,cm){var t=_t(),L=[];L.push("["+t+"] [main/INFO]: "+_L[0]);L.push("["+t+"] [main/INFO]: "+_L[4]);L.push("["+t+"] [main/WARN]: "+_L[1]);L.push("["+t+"] [main/ERROR]: "+pkg+"."+cls+": "+msg);_sk(3).forEach(function(l){L.push(l);});if(cm){L.push("Caused by: "+pkg+"."+cc+": "+cm);_sk(3).forEach(function(l){L.push(l);});L.push("Caused by: "+_p(_A));_sk(2).forEach(function(l){L.push(l);});}L.push("["+t+"] [main/FATAL]: "+_L[2]);L.push("["+t+"] [main/FATAL]: "+_L[17]);L.push("["+t+"] [main/FATAL]: "+_L[18]);L.push("["+t+"] [main/INFO]: "+_L[19]);L.push("["+t+"] [main/INFO]: "+_L[20]);L.push("["+t+"] [main/INFO]: "+_L[3]);return L.join("\n");}
-
-function _h(text){var h=_e(text);h=h.replace(/^([a-z][\w.]*\.[^\s:]+:.*)$/gm,'<span class="err">$1</span>');h=h.replace(/^(Caused by:.*)$/gm,'<span class="err">$1</span>');h=h.replace(/^(\[.*WARN\].*)$/gm,'<span class="warn">$1</span>');h=h.replace(/^(\[.*(ERROR|FATAL)\].*)$/gm,'<span class="err">$1</span>');h=h.replace(/^(\[.*INFO\].*)$/gm,'<span class="info">$1</span>');h=h.replace(/^(\s+at .*)$/gm,'<span class="dim">$1</span>');h=h.replace(/^(\/\/.*)$/gm,'<span class="chaos">$1</span>');return h;}
-
-var _M2={"F**kWatermelonException":"🍉🍉🍉🍉🍉Java馋了","TouchSomeGrassException":"🌿🌿🌿🌿🌿Java想去草坪打个滚","BuyYourOwnRamError":"💸💸💸💸💸内存不够自己去买，看我干嘛？","ImOuttaHereException":"🚪🚪🚪🚪🚪Java提桶跑路了","SockOverflowException":"🧦🧦🧦🧦🧦Java被臭袜子腌入味了","CaffeineNotFoundError":"☕☕☕☕☕Java没喝到咖啡，拒绝上班","WhyIsItAlwaysMeException":"💔💔💔💔💔怎么又是我？Java破防了","BrainNotFoundException":"🧠🧠🧠🧠🧠Java找不到脑子了，凑合用吧","PermissionToCryException":"😢😢😢😢😢Java想哭，申请已批准","CatOnKeyboardException":"🐈🐈🐈🐈🐈猫踩键盘了，Java不背锅","PizzaWasColdException":"🍕🍕🍕🍕🍕披萨凉了，Javaemo了","GrassTouchingRequiredException":"🌾🌾🌾🌾🌾请先去摸草再来写代码","StackOverflowError":"内存不够自己去买，看我干嘛？","OutOfMemoryError":"内存不够自己去买，看我干嘛？","NullPointerException":"你行你上啊，别光看着"};
-function _g(){var pkg=_q("pkg").value.trim()||"java.lang",cls=_q("cls").value.trim()||"Exception",msg=_q("msg").value.trim()||"null",cc=_q("causeCls").value.trim(),cm=_q("cause").value.trim(),f=_q("format").value,v;if(_M2[cls]&&(!msg||msg==="null")){msg=_M2[cls];}if(f==="bare")v=_b0(pkg,cls,msg,cc,cm);else if(f==="log4j")v=_b1(pkg,cls,msg,cc,cm);else if(f==="forge")v=_b2(pkg,cls,msg,cc,cm);else v=_b3(pkg,cls,msg,cc,cm);_q("preview").innerHTML=_h(v);}
-function _x0(){_q("pkg").value="com.smelly.sock";_q("cls").value="WhyAreYouLikeThisException";_q("msg").value="f**k, it crashed";_q("cause").value="Java got suffocated by a smelly sock";_q("causeCls").value="SmellySockEx";_q("format").value="full";_g();}
-function _z(){var ks=Object.keys(_M2);if(Math.random()<0.45){var k=_p(ks);_q("pkg").value="java.lang";_q("cls").value=k;_q("msg").value=_M2[k];_q("cause").value=_p(_U)+" — "+_p(_A);_q("causeCls").value=_p(_C);_g();return;}_q("pkg").value=_p(_P);var _cl=_p(_C);_q("cls").value=_cl;_q("msg").value=_M2[_cl]||_p(_M);_q("cause").value=_p(_U)+" — "+_p(_A);_q("causeCls").value=_p(_C);_g();}
-function _c(){var b=_q("copyBtn"),x=_q("preview").innerText;function _ok(){var o="📋 复制";b.textContent="已复制 ✓";_s("已复制到剪贴板");setTimeout(function(){b.textContent=o;},1600);}function _no(){_s("复制失败，请手动选择");}try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(x).then(_ok).catch(_no);}else{_no();}}catch(e){_no();}}
-function _a(){_q("preview").innerHTML="点击\"生成日志\"看看效果。";}
-function _s(m){var T=_q("toast");T.textContent=m;T.classList.add("show");setTimeout(function(){T.classList.remove("show");},2000);}
-
-var _cm=false,_ft=null;
-function _f(){if(_cm)return;var ly=_q("chaosLayer"),el=document.createElement("span");el.className="fly";el.textContent=_p(_F);var sz=_r(16,56);el.style.fontSize=sz+"px";el.style.left=_r(0,100)+"vw";el.style.top=_r(0,100)+"vh";var dx=_r(-90,90)+"vw",dy=_r(-90,90)+"vh",rt=_r(-720,720)+"deg",sc=(_r(8,28)/10).toFixed(1);el.style.setProperty("--dx",dx);el.style.setProperty("--dy",dy);el.style.setProperty("--rot",rt);el.style.setProperty("--sc",sc);el.style.animation=(Math.random()<0.5?"fly-across ":"spin-crazy ")+_r(1,4)+"s linear forwards";ly.appendChild(el);setTimeout(function(){el.remove();},4200);}
-function _k(){if(_cm||_ft)return;_f();_ft=setInterval(_f,140);}
-function _m(){if(_ft){clearInterval(_ft);_ft=null;}_q("chaosLayer").innerHTML="";}
-function _w0(){alert("光敏性癫痫患者绝对不要点！\n\n出事了作者概不负责。");if(_cm){_s("动效已关闭，先点🧘开启");return;}_q("seizureWarn").style.display="block";document.querySelector(".app").classList.add("shake");_k();var i;for(i=0;i<8;i++)_f();_s("💥 你点了，现在大家都崩溃了");setTimeout(function(){_m();document.querySelector(".app").classList.remove("shake");},5000);}
-function _v(){_cm=!_cm;var b=_q("calmToggle");if(_cm){_m();_gbStop();_glitchOverlay(false);_invert(false);document.querySelector(".app").classList.remove("shake");b.textContent="🌶️ 开启猎奇动效";_s("已开启平静模式");}else{b.textContent="🧘 关闭猎奇动效";_s("动效已开启，慎点💥");}}
-
-/* 闪烁乱码背景：持续随机刷新字符 */
-var _GB="▓▒░#@%&*+=<>/\\|01あいうえお漢字崩壞ABCXYZ∑∆Ω☠👾🌀🐍♨🔥🧦💀乱码崩溃混沌反人类测试",
-    _gbTimer=null;
-function _gbFill(){
-  var cols=Math.floor(window.innerWidth/9)+2, rows=Math.floor(window.innerHeight/16)+2, t="", x,y;
-  for(y=0;y<rows;y++){
-    for(x=0;x<cols;x++){ t+=_GB.charAt(_r(0,_GB.length-1)); }
-    t+="\n";
+var TEXTS = {
+  disg: {
+    warn: "ℹ️ 本站收录各类编程练习与演示页面，内容仅供参考，请结合官方文档学习。",
+    title: "技术学习资源中心", badge: "学习向",
+    desc: "收录练习题、示例页面与小工具，帮助你熟悉常见的报错与调试思路。",
+    note: "所有页面均可直接在浏览器中打开，无需安装任何环境。",
+    lucky: "🎲 随机来一个练习", spawn: "📄 查看示例集",
+    listTitle: "📚 练习与示例",
+    docsTitle: "📖 文档", docsA: "🧭 学习方法", docsB: "💬 常见坑案例",
+    docsBSub: "其他学习者踩过的坑与复盘（均为教学示例）：",
+    disTitle: "🧾 关于本站",
+    disBody: "本站内容为练习与演示用途，页面中的日志、输出与场景均为教学示例，不指向任何真实项目。\n数学练习的答案是认真的；示例页面的输出是编的。",
+    footBrand: "Tech Study Hub · 前端学习系列", footNote: "祝你学习顺利。",
+    luckyToast: "随机选择：", spawnToast: "打开示例集"
+  },
+  real: {
+    warn: "⚠️ 本系列全部内容仅供娱乐：请勿用于伪造真实崩溃日志、欺骗他人或恶心真实的人。",
+    title: "Anti-Human Tests", badge: "反人类测试",
+    desc: "A collection of tests that measure how much a human can endure. 这里没有一道题是为你好的，每一页都在试探你的耐心下限。",
+    note: "本系列含快速闪烁、整页抖动与乱码背景，可能诱发光敏性癫痫 / 眩晕。进入任意页面都会先弹确认框。",
+    lucky: "🎲 随机送我进一页", spawn: "🌀 先飞点东西再说",
+    listTitle: "📚 测试列表",
+    docsTitle: "📖 文档", docsA: "🧭 设计原则", docsB: "💔 受害者故事集",
+    docsBSub: "友尽、砸键盘、被室友投诉的真实（编的）案例：",
+    disTitle: "🧾 免责声明",
+    disBody: "本项目是玩笑与恶作剧的集合，不提供任何实用价值，也不保证任何数学题以外的正确答案真的「正确」（数学部分是认真的）。\n由此产生的友尽、砸键盘、闪瞎眼、被公司开除等后果，作者概不负责。",
+    footBrand: "Anti-Human Tests · 反人类测试系列", footNote: "如果有人因为这个项目友尽，作者概不负责。",
+    luckyToast: "命运选择了：", spawnToast: "这就是混沌的味道"
   }
-  _q("glitchBg").textContent=t;
+};
+
+function $(id) { return document.getElementById(id); }
+function currentPages() {
+  return AH.disguised ? DISGUISE_PAGES : REAL_PAGES;
 }
-function _gbStart(){ if(_gbTimer)return; _gbFill(); _gbTimer=setInterval(_gbFill,120); }
-function _gbStop(){ if(_gbTimer){clearInterval(_gbTimer);_gbTimer=null;} _q("glitchBg").textContent=""; }
+function currentTexts() {
+  return AH.disguised ? TEXTS.disg : TEXTS.real;
+}
 
-/* 全屏故障 / 反色闪屏 / 停止全部 */
-function _glitchOverlay(on){ var o=_q("glitchOverlay"); if(on){ if(!o){ o=document.createElement("div"); o.className="glitch-overlay"; o.id="glitchOverlay"; document.body.appendChild(o);} } else if(o){ o.remove(); } }
-function _invert(on){ if(on){ document.body.classList.add("invert"); } else { document.body.classList.remove("invert"); } }
-function _stopAll(){ _m(); _gbStop(); _glitchOverlay(false); _invert(false); document.querySelector(".app").classList.remove("shake"); _s("已全部停止"); }
+/* ===================== 渲染 ===================== */
+function renderHub() {
+  var pages = currentPages(), tx = currentTexts();
+  $("hubWarn").textContent = tx.warn;
+  $("hubWarn").className = AH.disguised ? "warnline" : "warnline danger";
+  $("hubTitle").textContent = tx.title;
+  $("hubTitle").setAttribute("data-t", tx.title);
+  $("hubBadge").textContent = tx.badge;
+  $("hubBadge").className = AH.disguised ? "badge ok" : "badge chaos";
+  $("hubDesc").textContent = tx.desc;
+  $("hubNote").textContent = tx.note;
+  $("luckyBtn").textContent = tx.lucky;
+  $("spawnBtn").textContent = tx.spawn;
+  $("hubListTitle").textContent = tx.listTitle;
+  $("docsTitle").textContent = tx.docsTitle;
+  $("docsA").textContent = tx.docsA;
+  $("docsB").textContent = tx.docsB;
+  $("docsALink").textContent = AH.disguised ? "学习方法笔记" : "docs/design-principles.md";
+  $("docsBLink").textContent = AH.disguised ? "常见坑复盘" : "docs/victim-stories.md";
+  var bSub = document.getElementById("docsBSub");
+  if (bSub) bSub.textContent = tx.docsBSub;
+  $("disclaimerTitle").textContent = tx.disTitle;
+  $("disclaimerBody").textContent = tx.disBody;
+  $("contribLink").textContent = AH.disguised ? "参与改进" : "CONTRIBUTING.md";
+  $("footBrand").textContent = tx.footBrand;
+  $("footNote").textContent = tx.footNote;
 
-_q("genBtn").onclick=_g;_q("randBtn").onclick=_z;_q("sampleBtn").onclick=_x0;_q("copyBtn").onclick=_c;_q("clearBtn").onclick=_a;_q("madBtn").onclick=_w0;_q("calmToggle").onclick=_v;
-_q("madBtn2").onclick=function(){_w0();};
-_q("spawnBtn").onclick=function(){ if(_cm){_s("动效已关闭，先点🧘开启");return;} _k(); _s("🌀 乱码雨来了"); };
-_q("glitchBtn").onclick=function(){ if(_cm){_s("动效已关闭，先点🧘开启");return;} _glitchOverlay(true); setTimeout(function(){_glitchOverlay(false);},3200); _s("📺 全屏故障！"); };
-_q("invertBtn").onclick=function(){ if(_cm){_s("动效已关闭，先点🧘开启");return;} _invert(true); setTimeout(function(){_invert(false);},2600); _s("🌈 反色闪屏！"); };
-_q("stopBtn").onclick=_stopAll;
-_g();
-
-/* 进入网页：先警告 + 确认，确认后才开放混沌控件并启动闪烁乱码背景 */
-function _enter(){
-  var ok=confirm("⚠️ 警告\n\n本页含快速闪烁、抖动、乱码背景与猎奇动效，可能诱发光敏性癫痫或眩晕。\n\n你确认要进入并开启混沌控件吗？\n（点「取消」将保持安静模式，不显示乱码背景）");
-  if(ok){
-    _q("chaosConsole").style.display="block";
-    _gbStart();
-    _s("混沌已开启，慎点💥");
-  }else{
-    _q("chaosConsole").style.display="none";
-    _s("已保持安静模式");
+  var g = $("hubGrid");
+  var html = "";
+  for (var i = 0; i < pages.length; i++) {
+    var p = pages[i];
+    var tags = p[3].split(" / ").map(function (t) {
+      return '<span class="badge">' + t + "</span>";
+    }).join(" ");
+    html += '<div class="card">' +
+      "<h3>" + p[1] + "</h3>" +
+      '<p class="small muted">' + p[2] + "</p>" +
+      '<div class="mb12">' + tags + "</div>" +
+      '<a class="btn sm" href="' + p[0] + '">进入 →</a>' +
+      "</div>";
   }
+  g.innerHTML = html;
 }
-if(typeof window!=="undefined"){ if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded",_enter); } else { _enter(); } }
-function _nope(){var z=0,i;for(i=0;i<3;i++){z=z+i;}return z;}
-})();
+
+/* ===================== 交互 ===================== */
+$("luckyBtn").onclick = function () {
+  var tx = currentTexts();
+  var p = AH.pick(currentPages())[0];
+  AH.toast(tx.luckyToast + p);
+  if (!AH.disguised) { AH.spawn(10); }
+  setTimeout(function () { location.href = p; }, AH.disguised ? 150 : 420);
+};
+$("panicBtn").onclick = function () {
+  AH.stopAll(); AH.setCalm(true); AH.toast("都停了，深呼吸");
+};
+$("spawnBtn").onclick = function () {
+  var tx = currentTexts();
+  if (AH.disguised) {
+    /* 伪装态：滚动到列表 */
+    $("hubListTitle").scrollIntoView({ behavior: "smooth" });
+    AH.toast(tx.spawnToast);
+  } else {
+    AH.spawn(18); AH.beep(); AH.toast(tx.spawnToast);
+  }
+};
+
+/* ===================== 解锁联动 ===================== */
+/* AH.init 在伪装态会调用 disguisePage；这里在 unlock 后重建真身内容 */
+var _origUnlock = AH.unlock;
+AH.unlock = function (hint) {
+  _origUnlock(hint);
+  renderHub();
+};
+/* 兜底：页面脚本载入时若已处于真身态（如 ?chaos=1），直接渲染真身 */
+if (!AH.disguised) { renderHub(); } else { renderHub(); }
+
+/* 彩蛋联动：伪装态下点击「学习」相关按钮时偶尔给点暗示 */
+document.addEventListener("click", function (e) {
+  if (!AH.disguised) return;
+  var t = e.target && e.target.textContent ? e.target.textContent : "";
+  if (/进入 →/.test(t) && Math.random() < 0.06) {
+    AH.toast("这个练习……确定要开始吗？");
+  }
+});
 </script>
 </body>
 </html>

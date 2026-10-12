@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MC 崩溃处理大挑战 · 混沌版 · Anti-Human Tests</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="ahnav" id="ahNav"></nav>
+
+<div class="wrap">
+
+  <div class="warnline danger">⚠️ 仅供娱乐。本页所有崩溃日志都是编的，请勿用于伪造真实日志或欺骗他人。</div>
+
+  <div class="card danger">
+    <h1>🌀 MC 崩溃处理大挑战 <span class="badge chaos">混沌版</span></h1>
+    <p class="muted">正经版讲道理，反套路版骗你，混合版两头下注。这一版<b>不装了</b>——病因本身就是荒诞的。</p>
+    <p class="small">但请注意：<b>日志的格式、异常类型、包名、调用链全都是真的</b>，
+      只有「为什么会变成这样」是离谱的。你要做的仍然是老老实实读栈，
+      然后接受一个荒唐的答案。<span class="blink">混沌指数越高，越离谱。</span></p>
+    <p class="small muted">其他版本：<a href="index.html">正经版</a> · <a href="evil.html">反套路版</a> · <a href="mixed.html">混合套路版</a></p>
+    <div class="qhead mt12">
+      <span>进度 <b id="qIdx">1</b>/<b id="qTot">0</b></span>
+      <span class="badge" id="diffBadge">—</span>
+      <span class="score">得分 <b id="score">0</b></span>
+      <div class="prog"><i id="progBar"></i></div>
+    </div>
+  </div>
+
+  <div class="card" id="stage">
+    <div class="quiz">
+      <div class="qhead">
+        <span class="badge chaos" id="caseTag">CASE</span>
+        <span class="muted small" id="caseHint"></span>
+      </div>
+      <p class="qtext" id="caseDesc"></p>
+      <pre class="qcode" id="caseLog"></pre>
+      <p class="small muted">👉 这次又是哪个宇宙规律被打碎了？</p>
+      <div class="opts" id="opts"></div>
+      <div class="why hidden" id="why"></div>
+      <div class="qfoot">
+        <button class="btn hidden" id="nextBtn">下一题 →</button>
+        <button class="btn ghost sm hidden" id="againBtn">🔁 重开</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card hidden" id="finalCard">
+    <h2>🏁 混沌结算</h2>
+    <p class="verdict" id="verdict"></p>
+    <p class="score" id="finalScore"></p>
+    <p class="small muted" id="finalNote"></p>
+    <div class="btnrow mt12">
+      <button class="btn" id="restartBtn">🔁 再来一轮</button>
+      <button class="btn chaos" id="chaosBtn">🌀 让混沌加剧</button>
+      <button class="btn warn sm" id="partyBtn">🎉 庆祝一下</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot">
+  <p>Anti-Human Tests · 反人类测试系列 · <a href="../index.html">返回首页</a></p>
+  <p class="small">如果有人因为这个项目友尽，作者概不负责。</p>
+</div>
+
+<script src="../assets/chaos.js"></script>
+<script>
+AH.init({ title: "MC 崩溃处理大挑战 · 混沌版", page: "mc-crash/" });
+
+/* =========================================================================
+   混沌版题库：
+   技术细节（异常类型 / 包名 / 调用顺序 / JVM 语义）全部为真；
+   荒诞的只是「人类如何把自己搞到这个地步」。
+   diff 字段在这里只当作混沌档位（easy/medium/hard → 混沌 +1/+2/+3），仅用于染色。
+   ========================================================================= */
+var CASES = [
+  {
+    tag: "CHAOS-01", diff: "easy",
+    desc: "服务器开服 40 秒后必崩，日志长得离谱，像是自己叫自己。",
+    hint: "提示：这个 onTick 里到底发生了什么？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Surprise! Haha. Well, this is awkward.\n" +
+"\n" +
+"Time: 2026-02-17 08:11:02\n" +
+"Description: Exception in server tick loop\n" +
+"\n" +
+"java.lang.StackOverflowError\n" +
+"\tat com.ouroboros.tick.SelfTickHandler.onTick(SelfTickHandler.java:23)\n\tat com.ouroboros.tick.SelfTickHandler.spawnTickling(SelfTickHandler.java:41)\n" +
+"\tat com.ouroboros.tick.SelfTickHandler.onTick(SelfTickHandler.java:27)\n\tat com.ouroboros.tick.SelfTickHandler.spawnTickling(SelfTickHandler.java:41)\n" +
+"\tat com.ouroboros.tick.SelfTickHandler.onTick(SelfTickHandler.java:27)\n\t... repeated 1024 times ...\n" +
+"\tat net.minecraftforge.eventbus.EventBus.post(EventBus.java:315)\n\tat net.minecraft.server.MinecraftServer.tickServer(MinecraftServer.java:1512)",
+    opts: ["SelfTickHandler 在自己的 onTick 里生成了会再次触发 onTick 的实体，无限递归撑爆了栈", "服务器 tick 线程分配的栈太小，加 -Xss 就好", "EventBus 的事件派发有递归缺陷", "实体数量超过服务器上限"],
+    ok: 0,
+    why: "机制是真的：<code>StackOverflowError</code> 的栈里出现了<b>严格交替、成对重复</b>的 <code>onTick → spawnTickling → onTick</code> 序列，这就是典型的自递归。模组在 tick 回调里生成了会触发下一次 tick 的东西，每一层都推进一点点，直到线程栈耗尽（默认约 512KB～1MB，很快就没了）。<br>荒诞之处在于：这个模组叫 <code>com.ouroboros</code>（衔尾蛇），作者显然知道自己在干什么，并且<b>决定继续</b>。顺带说一句：加 <code>-Xss</code> 只会让它多递归几百层，不会让它停下来。"
+  },
+  {
+    tag: "CHAOS-02", diff: "easy",
+    desc: "玩家存档换了台机器就再也打不开，所有开服尝试都卡在读世界数据那一步。",
+    hint: "提示：CEN header 是什么文件才会有的？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Don't do that then.\n" +
+"\n" +
+"Time: 2026-02-17 08:29:47\n" +
+"Description: Loading world\n" +
+"\n" +
+"java.util.zip.ZipException: invalid CEN header (bad signature)\n" +
+"\tat java.base/java.util.zip.ZipFile$Source.checkAndGetPosition(ZipFile.java:1350)\n\tat java.base/java.util.zip.ZipFile$Source.initCEN(ZipFile.java:1503)\n" +
+"\tat java.base/java.util.zip.ZipFile$Source.<init>(ZipFile.java:1292)\n\tat java.base/java.util.zip.ZipFile.<init>(ZipFile.java:248)\n" +
+"\tat com.anvilbackup.loader.WorldArchiveLoader.open(WorldArchiveLoader.java:62)\n" +
+"\tat net.minecraft.server.level.ServerLevel.loadLevel(ServerLevel.java:772)",
+    opts: ["存档的 region 文件被写坏了，需要重新生成区块", "这个「存档压缩包」其实是一张改了后缀的 meme 图片，根本不是 zip，中央目录读不出来", "Java 的 zip 实现对大于 4GB 的文件支持不好", "世界版本比服务端新，无法降级读取"],
+    ok: 1,
+    why: "机制是真的：<code>invalid CEN header (bad signature)</code> 来自 <code>ZipFile$Source.initCEN</code>，意思是它在文件末尾找 <b>Central Directory（中央目录）</b> 的签名 <code>PK\\x01\\x02</code>，结果读到的是别的东西。<b>这只会发生在「文件根本不是 zip」的时候</b>——不是压缩包损坏，而是从第一个字节起就是另一类文件。改成 <code>.zip</code> 后缀不会改变文件内容，Java 不看后缀，看魔术字节。<br>荒诞之处在于：人类把 meme 图片改名成 <code>world.zip</code>、把真存档挪走，然后在三台机器上重复了同一套操作。图片全程无辜。"
+  },
+  {
+    tag: "CHAOS-03", diff: "medium",
+    desc: "某个安全类模组突然不再拦截危险操作了，服务端开始各种莫名其妙地出问题。",
+    hint: "提示：这个布尔值是从哪读出来的？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// This doesn't make any sense!\n" +
+"\n" +
+"Time: 2026-02-17 09:03:18\n" +
+"Description: Exception in server tick loop\n" +
+"\n" +
+"java.lang.IllegalStateException: Guard check was skipped but a BlockEntity was mutated off-thread\n" +
+"\tat com.lockedbox.guard.ThreadGuard.check(ThreadGuard.java:88)\n\tat com.lockedbox.guard.ThreadGuard.onBlockEntityAccess(ThreadGuard.java:132)\n" +
+"\tat net.minecraft.world.level.chunk.LevelChunk.setBlockState(LevelChunk.java:280)\n" +
+"\tat net.minecraft.server.level.ServerLevel.tickChunk(ServerLevel.java:611)\n" +
+"\n" +
+"Config dump (lockedbox-common.toml):\n" +
+"  guardEnabled = false\n" +
+"  raw line     = guardEnabled = mrrrrow",
+    opts: ["ThreadGuard 的线程检查逻辑本身写错了，误报", "配置文件里的值被改成了 mrrrrow，Boolean.parseBoolean 对任何非 true 字符串都返回 false，保护被静默关闭", "原版区块在多线程下不安全", "Forge 没有正确加载 toml 配置"],
+    ok: 1,
+    why: "机制是真的：<code>Boolean.parseBoolean(String)</code> 的语义是 <b>只有当字符串等于（忽略大小写）<code>true</code> 时才返回 true，其余一律返回 false</b>，它对非法输入<b>不抛异常、不报错、也不警告</b>。所以 <code>mrrrrow</code> 被安静地当成了 false，模组的保护开关就这么关了——日志里那句 <code>Guard check was skipped</code> 正是它自己承认的。<br>荒诞之处在于：这个 <code>mrrrrow</code> 是一只猫踩在键盘上打出来的，而它恰好覆盖了整行值。更荒诞的是，这套容错设计本身没写错，它只是<b>太宽容了</b>——沉默地接受垃圾输入，是很多配置系统的原罪。"
+  },
+  {
+    tag: "CHAOS-04", diff: "medium",
+    desc: "服务器在一次卡顿后直接拒绝执行任何指令，控制台疯狂刷屏。",
+    hint: "提示：谁在 2 秒内提交了这么多任务？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Quite annoying.\n" +
+"\n" +
+"Time: 2026-02-17 09:41:55\n" +
+"Description: Exception in server tick loop\n" +
+"\n" +
+"java.util.concurrent.RejectedExecutionException: Task " +
+"java.util.concurrent.FutureTask@3f2a9c11 rejected from " +
+"java.util.concurrent.ThreadPoolExecutor@1a2b3c4d" +
+"[Shutting down, pool size = 8, active threads = 8, queued tasks = 1024, completed tasks = 19042]\n" +
+"\tat java.base/java.util.concurrent.ThreadPoolExecutor$AbortPolicy.rejectedExecution(ThreadPoolExecutor.java:2070)\n" +
+"\tat java.base/java.util.concurrent.ThreadPoolExecutor.reject(ThreadPoolExecutor.java:841)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.execute(ThreadPoolExecutor.java:1378)\n" +
+"\tat net.minecraft.server.dedicated.DedicatedServer.executeIfPossible(DedicatedServer.java:338)\n" +
+"\tat net.minecraft.server.dedicated.DedicatedServer.handleConsoleInputs(DedicatedServer.java:411)\n" +
+"Caused by: command block loop submitting /stop 47 times in 2.35 s (20 per second, one per tick)\n" +
+"\tat net.minecraft.world.level.BaseCommandBlock.tick(BaseCommandBlock.java:114)",
+    opts: ["有人用循环命令方块在 2.35 秒内触发了 47 次 /stop，把线程池队列塞满后拒绝服务", "线程池配置太小，改 server.properties 里的 max-threads 即可", "Java 的 ThreadPoolExecutor 有并发缺陷", "命令方块被恶意插件接管了"],
+    ok: 0,
+    why: "机制是真的：<code>RejectedExecutionException</code> 是 <b>AbortPolicy（默认拒绝策略）</b>的产物——线程池处于 <code>Shutting down</code>、队列已满（1024）时，新任务直接被拒。<code>handleConsoleInputs</code> 在栈里说明这条路径来自<b>服务端主循环处理控制台输入</b>，而队列里同时又塞着 <code>/stop</code>——服务器正在关自己，却还在接收新任务。<br>荒诞之处在于：命令方块最快每 tick 执行一次，也就是 20 次/秒——47 次恰好需要约 2.35 秒，和日志里的时间完全吻合。人类搭了一个<b>会自杀的机器</b>，然后围观看它自杀。（好消息：它确实关机了。坏消息：以一种谁都没预期的方式。）"
+  },
+  {
+    tag: "CHAOS-05", diff: "medium",
+    desc: "换上某个光影包后，一进世界就崩，报错说一个文件不是 PNG。",
+    hint: "提示：文件名和内容谁说了算？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Hey, that tickles!\n" +
+"\n" +
+"Time: 2026-02-17 10:12:30\n" +
+"Description: Rendering overlay\n" +
+"\n" +
+"java.io.IOException: Not a PNG file\n" +
+"\tat com.mojang.blaze3d.platform.NativeImage.read(NativeImage.java:220)\n\tat com.mojang.blaze3d.platform.TextureUtil.loadTexture(TextureUtil.java:143)\n" +
+"\tat com.sunnyshader.SunnyShaderPack.loadNoiseTexture(SunnyShaderPack.java:97)\n\tat com.sunnyshader.SunnyShaderPack.onResourceReload(SunnyShaderPack.java:54)\n" +
+"\tat net.minecraft.client.Minecraft.runTick(Minecraft.java:1088)\n" +
+"\n" +
+"Offending resource: shaders/noise/nice.png (412 bytes)\n" +
+"First bytes: 6E 69 63 65 0A",
+    opts: ["noise.png 这个文件其实是纯文本，内容只有 4 个字母，PNG 解码器读不到 89 50 4E 47 魔术字节", "PNG 文件被压缩工具改坏了，重新导出即可", "光影包版本和游戏版本不匹配", "显卡驱动不支持这个纹理格式"],
+    ok: 0,
+    why: "机制是真的：PNG 文件的第一个字节必须是 <code>89 50 4E 47 0D 0A 1A 0A</code>（<code>\\x89PNG</code>）。日志里 <code>First bytes: 6E 69 63 65 0A</code> 解码出来正是 ASCII 的 <code>n i c e</code> 加一个换行——<b>这是一个写着 nice 的文本文件</b>，<code>NativeImage.read</code> 读完头部就判定不是 PNG 并抛错。游戏只看内容，不看扩展名。<br>荒诞之处在于：有人想给光影作者留个好评，就在包里放了个 <code>nice.png</code>，里面写了 <code>nice</code>。它被加载器当成了噪声贴图。<b>表扬最终导致了崩溃。</b>"
+  },
+  {
+    tag: "CHAOS-06", diff: "hard",
+    desc: "玩着玩着，只要服务器保存区块就崩，报错是一个负数的数组长度。",
+    hint: "提示：这个数字是怎么算出来的？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Out of memory!\n" +
+"\n" +
+"Time: 2026-02-17 10:58:04\n" +
+"Description: Saving chunks\n" +
+"\n" +
+"java.lang.NegativeArraySizeException: -1\n" +
+"\tat com.netnegative.stats.BlockDeltaBuffer.snapshot(BlockDeltaBuffer.java:58)\n\tat com.netnegative.stats.ChunkStatsCollector.flush(ChunkStatsCollector.java:119)\n" +
+"\tat net.minecraft.server.level.ChunkMap.save(ChunkMap.java:1024)\n\tat net.minecraft.server.level.ServerChunkCache.save(ServerChunkCache.java:611)\n" +
+"\tat net.minecraft.server.MinecraftServer.tickServer(MinecraftServer.java:1512)\n" +
+"\n" +
+"Derived counters: blocksPlaced = 1204, blocksBroken = 1205",
+    opts: ["玩家挖掉的方块比放下的多一个，模组用「放置数 - 破坏数」当作缓冲区大小，算出 -1 后去 new 数组", "区块数据损坏，导致统计计数器溢出", "JVM 的 int 运算出现异常", "区块保存时并发写入导致数据错乱"],
+    ok: 0,
+    why: "机制是真的：<code>NegativeArraySizeException</code> 是 JVM 在 <code>new byte[n]</code> 收到负长度时抛的，日志里的 <code>-1</code> 就是那个 n。推导也完全对得上：<code>1204 - 1205 = -1</code>，而这个模组把<b>「净放置量」直接当成了缓冲区长度</b>——一个从没考虑过玩家的设计。现实里它之所以长期没炸，是因为大多数玩家放得比挖得多。<br>荒诞之处在于：触发条件是<b>有人挖了 1205 个方块、只放了 1204 个</b>。换句话说，这场崩溃的元凶是一台效率很高的镐子，以及一个相信「人类会净建造」的变量名。"
+  },
+  {
+    tag: "CHAOS-07", diff: "hard",
+    desc: "服务器平时没事，一到大量实体聚集的地方（比如刷怪塔）就崩，栈里有两个模组。",
+    hint: "提示：谁在遍历，谁在删除？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// I blame Dinnerbone.\n" +
+"\n" +
+"Time: 2026-02-17 11:33:26\n" +
+"Description: Ticking entity\n" +
+"\n" +
+"java.util.ConcurrentModificationException\n" +
+"\tat java.base/java.util.ArrayList$Itr.checkForComodification(ArrayList.java:1013)\n\tat java.base/java.util.ArrayList$Itr.next(ArrayList.java:960)\n" +
+"\tat com.cleaner.tick.EntityCleaner.prune(EntityCleaner.java:88)\n\tat com.culler.tick.EntityCuller.tick(EntityCuller.java:71)\n" +
+"\tat net.minecraftforge.eventbus.TickEventBridge.onTick(TickEventBridge.java:44)",
+    opts: ["EntityCuller 在遍历/清理时移除了实体，随后 EntityCleaner 去遍历同一个列表，迭代器检测到结构被改动", "ArrayList 本身不是线程安全的，这是 Java 的已知限制", "实体数量太多导致列表扩容失败", "两个模组注册了同一个 tick 事件监听器，造成重复调用"],
+    ok: 0,
+    why: "机制是真的：<code>ConcurrentModificationException</code> 由 <code>Itr.checkForComodification</code> 抛出，它在每次 <code>next()</code> 时核对 modCount——<b>只要迭代期间集合结构被改动，立刻失败，哪怕是同一个线程</b>。栈的顺序说明了一切：<code>EntityCuller.tick</code> 先移除了实体，紧接着它触发的 <code>EntityCleaner.prune</code> 才去遍历那个列表，迭代器当场翻脸。正确写法是先把要删的收集进临时列表、遍历结束后统一删除，或者直接用迭代器自己的 <code>remove()</code>。<br>荒诞之处在于：两个模组分别叫「剔除器」和「清洁工」，它们唯一的区别是<b>谁先动手</b>。你同时装了两个打扫卫生的，然后惊讶于它们开始互相扔垃圾。"
+  },
+  {
+    tag: "CHAOS-08", diff: "hard",
+    desc: "服务端跑了一整天后突然崩溃，内存看着很正常，堆使用率一直在 30% 左右。",
+    hint: "提示：堆里没事，那哪里有事？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// This doesn't make any sense!\n" +
+"\n" +
+"Time: 2026-02-17 12:47:09\n" +
+"Description: Exception in server tick loop\n" +
+"\n" +
+"java.lang.OutOfMemoryError: Metaspace\n" +
+"\tat java.base/java.lang.invoke.MethodHandles$Lookup$ClassDefiner.defineClass(MethodHandles.java:2143)\n\tat java.base/java.lang.invoke.MethodHandles$Lookup.defineClass(MethodHandles.java:1192)\n" +
+"\tat com.factorygen.runtime.TickTaskFactory.newTaskClass(TickTaskFactory.java:143)\n\tat com.factorygen.runtime.TickTaskFactory.create(TickTaskFactory.java:88)\n" +
+"\tat com.factorygen.tick.TickDispatcher.dispatch(TickDispatcher.java:52)\n\tat net.minecraftforge.eventbus.TickEventBridge.onTick(TickEventBridge.java:44)\n" +
+"\n" +
+"Metaspace: 1048576K used, 1048576K committed (MaxMetaspaceSize = 1024m)",
+    opts: ["模组每 tick 都用 Lookup.defineClass 动态定义一个新类，类元数据不断堆积，最终耗尽 Metaspace", "Java 堆太小，堆溢出被误报成了 Metaspace 溢出", "Forge 的事件总线的 lambda 缓存泄漏", "服务器的 MaxMetaspaceSize 配置过小，调大即可"],
+    ok: 0,
+    why: "机制是真的：<code>Metaspace</code> 存放的是<b>类元数据</b>，位于本地内存，和 <code>-Xmx</code> 管的堆是两回事——所以「堆只用了 30%」和「Metaspace 爆了」完全可以同时成立。类一旦被定义就<b>很难被卸载</b>，需要 classloader 整体不可达才会被回收。日志里的 <code>Lookup.defineClass</code> 出现在 <code>TickTaskFactory.newTaskClass</code> 下，意味着这个模组<b>每 tick 都在定义新类</b>：20 次/秒 × 86400 秒 ≈ 一天一百七十多万个类。<br>荒诞之处在于：这个模组叫 <code>factorygen</code>（工厂生成器），它唯一的产品就是类。调大 <code>MaxMetaspaceSize</code> 只是把爆炸延后，就像给一个漏水的桶换更大号的桶。"
+  }
+];
+
+/* --------------------------- 引擎 --------------------------- */
+var idx = 0, score = 0, answered = false;
+
+document.getElementById("qTot").textContent = CASES.length;
+
+function chaosLabel(d) {
+  return d === "easy" ? "🌀 混沌 +1" : d === "medium" ? "🌀 混沌 +2" : "🌀 混沌 +3";
+}
+
+function render() {
+  var c = CASES[idx];
+  answered = false;
+  document.getElementById("qIdx").textContent = idx + 1;
+  document.getElementById("caseTag").textContent = c.tag;
+  document.getElementById("caseHint").textContent = c.hint;
+  document.getElementById("caseDesc").textContent = c.desc;
+  document.getElementById("caseLog").textContent = c.log;
+
+  var db = document.getElementById("diffBadge");
+  db.textContent = chaosLabel(c.diff);
+  db.className = "badge chaos";
+
+  var box = document.getElementById("opts");
+  box.innerHTML = "";
+  var keys = ["A", "B", "C", "D"];
+  c.opts.forEach(function (text, i) {
+    var b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = '<span class="k">' + keys[i] + '</span><span>' + text + "</span>";
+    b.onclick = function () { answer(i); };
+    box.appendChild(b);
+  });
+
+  document.getElementById("why").className = "why hidden";
+  document.getElementById("why").innerHTML = "";
+  document.getElementById("nextBtn").className = "btn hidden";
+  document.getElementById("nextBtn").textContent =
+    (idx === CASES.length - 1) ? "查看混沌结算 →" : "下一题 →";
+  document.getElementById("againBtn").className = "btn ghost sm hidden";
+
+  document.getElementById("progBar").style.width = Math.round((idx / CASES.length) * 100) + "%";
+}
+
+function answer(pick) {
+  if (answered) return;
+  answered = true;
+  var c = CASES[idx];
+  var right = (pick === c.ok);
+
+  if (right) {
+    score++;
+    AH.beep("ok");
+    AH.toast("你居然跟上了混沌的节奏");
+  } else {
+    AH.beep("bad");
+    AH.toast("混沌赢了这一局", true);
+    AH.shake(true);
+    setTimeout(function () { AH.shake(false); }, 260);
+  }
+
+  document.querySelectorAll("#opts .opt").forEach(function (b, i) {
+    b.disabled = true;
+    if (i === c.ok) b.classList.add("ok");
+    else if (i === pick) b.classList.add("bad");
+  });
+  document.getElementById("score").textContent = score;
+
+  var keys = ["A", "B", "C", "D"];
+  var w = document.getElementById("why");
+  w.className = "why";
+  w.innerHTML = "<b>" + (right ? "✅ 你接受了这个病因。" : "❌ 答案是 " + keys[c.ok] + "。") +
+                "</b><br>" + c.why;
+  document.getElementById("nextBtn").className = "btn";
+  document.getElementById("againBtn").className = "btn ghost sm";
+  if (right) AH.spawn(5);
+}
+
+function next() {
+  if (idx < CASES.length - 1) { idx++; render(); }
+  else finish();
+}
+
+function finish() {
+  document.getElementById("stage").className = "card hidden";
+  document.getElementById("finalCard").className = "card";
+  var pct = score / CASES.length;
+  var v, n;
+  if (pct === 1) {
+    v = "🌌 你已经和混沌融为一体";
+    n = "全对。你不但读懂了栈，还接受了它背后的荒谬。这是一种很难回头的能力。";
+  } else if (pct >= 0.7) {
+    v = "🦑 触手可及的真凶";
+    n = "几乎全对。你离那群触手只差一两次崩溃的距离。";
+  } else if (pct >= 0.4) {
+    v = "😐 你居然还试图讲道理";
+    n = "你在认真推理，而题目本身在开玩笑。这个分数很体面。";
+  } else if (pct > 0) {
+    v = "🤡 你被自己的理性骗了";
+    n = "你一直在找「合理」的答案，而这一页里没有那种东西。";
+  } else {
+    v = "🫠 混沌完整地吞下了你";
+    n = "全错。但说真的，全错和全对在这一页里是同一个意思。";
+  }
+  document.getElementById("verdict").textContent = v;
+  document.getElementById("finalScore").innerHTML = "得分 <b>" + score + "</b> / " + CASES.length;
+  document.getElementById("finalNote").textContent = n;
+  document.getElementById("progBar").style.width = "100%";
+  if (pct >= 0.7) { AH.spawn(18); AH.beep("ok"); }
+}
+
+function intensify() {
+  AH.overlay(true);
+  AH.spawn(20);
+  AH.shake(true);
+  AH.beep("bad");
+  AH.toast("日志已经看不懂了", true);
+  setTimeout(function () {
+    AH.shake(false);
+    AH.overlay(false);
+  }, 900);
+}
+
+function restart() {
+  idx = 0; score = 0;
+  AH.stopAll();
+  document.getElementById("score").textContent = "0";
+  document.getElementById("stage").className = "card";
+  document.getElementById("finalCard").className = "card hidden";
+  render();
+}
+
+document.getElementById("nextBtn").onclick = next;
+document.getElementById("againBtn").onclick = restart;
+document.getElementById("restartBtn").onclick = restart;
+document.getElementById("chaosBtn").onclick = intensify;
+document.getElementById("partyBtn").onclick = function () {
+  AH.spawn(28); AH.beep(); AH.toast("🎉 混沌也值得庆祝");
+};
+
+render();
+</script>
+</body>
+</html>

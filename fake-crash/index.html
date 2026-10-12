@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>假 MC 崩溃页面 · Anti-Human Tests</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="ahnav" id="ahNav"></nav>
+
+<div class="wrap wide">
+
+  <div class="warnline danger">⚠️ 这是伪造的崩溃日志，仅供娱乐。请勿用于欺骗、甩锅或伪造真实崩溃日志。</div>
+
+  <div class="card">
+    <h1 class="title-glitch" data-t="假崩溃日志">假 MC 崩溃日志生成器</h1>
+    <p class="muted">填几个字段，生成一份看起来像 <span class="info">crash-reports/crash-YYYY-MM-DD_HH.MM.SS-client.txt</span> 的东西。所有堆栈帧都是随机拼出来的，不会真的伤害任何一只苦力怕。</p>
+    <div class="row mt12">
+      <span class="badge warn">#Forge</span>
+      <span class="badge">#NullPointerException</span>
+      <span class="badge chaos">#Mixin</span>
+      <span class="badge bad">#罪魁祸首是那个模组</span>
+    </div>
+  </div>
+
+  <div class="grid two">
+
+    <div class="card">
+      <h2>⚙️ 参数配置</h2>
+
+      <div class="row">
+        <div class="field">
+          <label for="fPlayer">玩家名</label>
+          <input type="text" id="fPlayer" value="Steve" maxlength="16">
+        </div>
+        <div class="field">
+          <label for="fVer">MC 版本</label>
+          <input type="text" id="fVer" value="1.20.1" maxlength="12">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="fMods">模组数量</label>
+          <input type="number" id="fMods" value="187" min="0" max="2000">
+        </div>
+        <div class="field">
+          <label for="fCulprit">罪魁祸首模组</label>
+          <input type="text" id="fCulprit" value="awesome_mod-1.7.3.jar" maxlength="64">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="fReason">崩溃原因描述</label>
+          <input type="text" id="fReason" value="Rendering screen" maxlength="80">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="fStack">是否输出完整 Java 堆栈</label>
+          <select id="fStack">
+            <option value="full">完整（含 Caused by 与 Suppressed）</option>
+            <option value="short">简短（只留顶层帧）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fStyle">输出风格</label>
+          <select id="fStyle">
+            <option value="forge">forge crash-report（经典）</option>
+            <option value="log4j">log4j console（控制台刷屏）</option>
+            <option value="bare">极简 bare（只有堆栈）</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btnrow mt12">
+        <button class="btn danger" id="btnGen">💥 生成假崩溃日志</button>
+        <button class="btn ghost" id="btnRand">🌀 随机来一份</button>
+        <button class="btn warn" id="btnCrash">💥 让 MC 真的崩</button>
+      </div>
+      <p class="small muted mt12">提示：这份日志里的行号、类名、包名都是随机的，复现不了的。真正的崩溃报告请联系模组作者，而不是来这里。</p>
+    </div>
+
+    <div class="card danger">
+      <h2>📄 崩溃日志输出</h2>
+      <div class="btnrow mb12">
+        <button class="btn sm" id="btnCopy">📋 复制日志</button>
+        <span class="badge" id="outBadge">尚未生成</span>
+      </div>
+      <pre class="preview" id="out">// 点击左侧的「💥 生成假崩溃日志」开始演戏。
+// 本文件不会写入你的磁盘，也不会真的让游戏崩溃。</pre>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <h2>🧾 常见崩溃速查（真实知识，非伪造）</h2>
+    <div class="grid auto">
+      <div>
+        <p><b class="err">java.lang.NullPointerException</b><br><span class="muted small">最常见。某个字段在渲染/网络线程里还是 null，通常是客户端模组跑到服务端逻辑里去拿 <code>level</code>。</span></p>
+      </div>
+      <div>
+        <p><b class="err">java.lang.OutOfMemoryError: Java heap space</b><br><span class="muted small">堆不够。加 <code>-Xmx4G</code> 或减少模组；也可能是某个模组在无限缓存贴图。</span></p>
+      </div>
+      <div>
+        <p><b class="err">java.lang.NoSuchMethodError</b><br><span class="muted small">模组编译时用的 API 与运行时的 MC/Forge 版本不一致。经典版本错配。</span></p>
+      </div>
+      <div>
+        <p><b class="err">Mixin apply failed</b><br><span class="muted small">两个模组同时注入同一个方法。日志里往上翻能看到是哪个 mixin 先动的手。</span></p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot">
+  <p>Anti-Human Tests · 反人类测试系列 · <a href="../index.html">返回首页</a></p>
+  <p class="small">如果有人因为这个项目友尽，作者概不负责。</p>
+</div>
+
+<script src="../assets/chaos.js"></script>
+<script>
+AH.init({ title: "假 MC 崩溃页面", page: "fake-crash/" });
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+
+/* ---------- 素材池（全部英文、真实感的标识符） ---------- */
+const PACKAGES = [
+  "com.example.awesome_mod.client",
+  "com.example.awesome_mod.core",
+  "net.minecraft.world.level",
+  "net.minecraft.client.renderer",
+  "net.minecraftforge.fml.loading",
+  "net.minecraftforge.eventbus",
+  "org.spongepowered.asm.mixin.injection",
+  "org.spongepowered.asm.mixin.transformer",
+  "net.optifine.render",
+  "net.optifine.shaders",
+  "me.lazy.coder.patchwork",
+  "io.github.someone.fastchunk",
+  "com.github.breadcrumb.hud",
+  "dev.architectury.hooks",
+  "net.fabricmc.loader.impl",
+  "com.mojang.blaze3d.platform",
+  "java.util.concurrent",
+  "java.lang.reflect"
+];
+const CLASSES = [
+  "HudRenderer", "HudOverlayLayer", "WorldTickHandler", "ClientTickHandler",
+  "ChunkProviderMixin", "ChunkRenderDispatcher", "EntityRendererWrapper",
+  "BlockStateCache", "LevelChunkSection", "TextureAtlasStitcher",
+  "ConfigParser", "ModLoadingContextImpl", "MixinTransformer", "ShaderProgramCache",
+  "ItemStackHelper", "PacketHandler", "NetworkDispatcher", "SoundEngineBridge",
+  "ModelBakeQueue", "PlayerInventoryHooks", "CapabilityProviderRegistry"
+];
+const METHODS = [
+  "render", "renderOverlay", "tick", "onTick", "injectHead", "injectTail",
+  "redirectCall", "apply", "transform", "bake", "getBlockState", "update",
+  "handlePacket", "onWorldLoad", "reload", "initShader", "cacheLookup",
+  "resolve", "dispatch", "flushQueue", "lambda$render$14", "access$000"
+];
+const FILES = [
+  "HudRenderer.java", "WorldTickHandler.java", "ChunkProviderMixin.java",
+  "MixinTransformer.java", "ShaderProgramCache.java", "ConfigParser.java",
+  "PacketHandler.java", "ModelBakeQueue.java", "ChunkRenderDispatcher.java",
+  "ItemStackHelper.java", "LevelChunkSection.java", "EntityRendererWrapper.java"
+];
+const FRAME_KINDS = ["mod", "mc", "forge", "mixin", "optifine", "lib", "jdk"];
+const NATIVE_METHODS = [
+  "sun.misc.Unsafe.park", "java.lang.Thread.sleep", "java.util.concurrent.locks.LockSupport.park",
+  "jdk.internal.misc.Unsafe.park", "sun.nio.ch.FileDispatcherImpl.read0"
+];
+const WHY_LINES = [
+  "// Don't do that then.",
+  "// This is why we can't have nice things.",
+  "// I blame the mod.",
+  "// Have you tried turning it off and on again?",
+  "// Why did you do this?",
+  "// It worked on my machine.",
+  "// Somebody set us up the bomb.",
+  "// Your fault. Definitely your fault.",
+  "// 0 mods loaded, 1 mod blamed.",
+  "// The cake was a lie, and so was this stack trace.",
+  "// Reported to Mojang. They will not answer.",
+  "// Have you considered playing vanilla?",
+  "// This is not a bug, it is an undocumented feature.",
+  "// Null. It is always null."
+];
+const EXCEPTIONS = [
+  { type: "java.lang.NullPointerException",
+    msg: 'Cannot invoke "net.minecraft.world.level.Level.getBlockState(net.minecraft.core.BlockPos)" because "this.level" is null' },
+  { type: "java.lang.NullPointerException",
+    msg: 'Cannot invoke "net.minecraft.client.renderer.texture.TextureAtlasSprite.getU0()" because "sprite" is null' },
+  { type: "java.lang.IndexOutOfBoundsException",
+    msg: "Index 42 out of bounds for length 16" },
+  { type: "java.lang.IllegalStateException",
+    msg: "Registry is already frozen" },
+  { type: "java.lang.NoSuchMethodError",
+    msg: "'void net.minecraftforge.fml.ModLoadingContext.registerConfig(java.lang.String, java.util.function.Supplier)'" },
+  { type: "java.lang.OutOfMemoryError",
+    msg: "Java heap space" },
+  { type: "java.util.ConcurrentModificationException",
+    msg: "null" },
+  { type: "java.lang.ClassCastException",
+    msg: "class net.minecraft.world.level.chunk.LevelChunk cannot be cast to class com.example.awesome_mod.core.WrappedChunk" },
+  { type: "org.spongepowered.asm.mixin.throwables.MixinApplyError",
+    msg: "Mixin apply failed awesome_mod.mixins.json:HudRendererMixin -> net.minecraft.client.gui.Gui: Injection failure: could not find target method renderOverlay" },
+  { type: "java.lang.StackOverflowError",
+    msg: "null" }
+];
+const CAUSE_POOL = [
+  { type: "java.lang.IllegalArgumentException", msg: "Unsupported shader version: 460 core", from: "optifine" },
+  { type: "java.lang.ClassNotFoundException", msg: "com.example.awesome_mod.api.LegacyBridge", from: "mod" },
+  { type: "java.lang.OutOfMemoryError", msg: "Metaspace", from: "jdk" },
+  { type: "java.lang.NoClassDefFoundError", msg: "Could not initialize class net.optifine.shaders.Shaders", from: "optifine" },
+  { type: "java.io.FileNotFoundException", msg: "mods/awesome_mod-1.7.3.jar (The system cannot find the file specified)", from: "mod" }
+];
+
+/* ---------- 生成一个堆栈帧 ---------- */
+function makeFrame() {
+  const kind = pick(FRAME_KINDS);
+  const file = pick(FILES);
+  if (kind === "jdk" && Math.random() < 0.4) {
+    return { text: "at " + pick(NATIVE_METHODS) + "(Native Method)", kind: "lib" };
+  }
+  let pkg, cls, method;
+  switch (kind) {
+    case "mod":     pkg = pick([PACKAGES[0], PACKAGES[1], PACKAGES[10], PACKAGES[11], PACKAGES[12]]); break;
+    case "mc":      pkg = pick(["net.minecraft.world.level", "net.minecraft.client.renderer", "com.mojang.blaze3d.platform", "net.minecraft.world.entity"]); break;
+    case "forge":   pkg = pick(["net.minecraftforge.fml.loading", "net.minecraftforge.eventbus", "net.minecraftforge.common.capabilities", "dev.architectury.hooks"]); break;
+    case "mixin":   pkg = pick(["org.spongepowered.asm.mixin.injection", "org.spongepowered.asm.mixin.transformer"]); break;
+    case "optifine": pkg = pick(["net.optifine.render", "net.optifine.shaders"]); break;
+    case "lib":     pkg = pick(["net.fabricmc.loader.impl", "java.util.concurrent", "java.lang.reflect"]); break;
+    default:        pkg = pick(["java.util.concurrent", "java.lang.reflect", "java.util.stream"]); break;
+  }
+  cls = pick(CLASSES);
+  method = pick(METHODS);
+  const line = ri(100, 9999);
+  return { text: "at " + pkg + "." + cls + "." + method + "(" + file + ":" + line + ")", kind };
+}
+
+/* ---------- 版本 / 系统信息 ---------- */
+function sysDetails(modCount, culprit, ver) {
+  const memMax = pick([4096, 6144, 8192, 12288, 16384]);
+  const memUsed = Math.round(memMax * (0.55 + Math.random() * 0.4));
+  const jdk = pick(["17.0.8", "17.0.9", "21.0.2", "21.0.3", "1.8.0_392"]);
+  const forgeVer = ver === "1.20.1" ? "47.2.20" : (ver === "1.19.2" ? "43.3.5" : "36.2.39");
+  const os = pick(["Windows 11 (amd64) version 10.0", "Windows 10 (amd64) version 10.0", "Linux (amd64) version 6.5.0"]);
+  const gl = pick(["NVIDIA GeForce RTX 3060/PCIe/SSE2", "AMD Radeon RX 6600/PCIe/SSE2", "Intel(R) UHD Graphics 630"]);
+  const lines = [
+    "-- System Details --",
+    "Details:",
+    "\tMinecraft Version: " + ver,
+    "\tMinecraft Version ID: " + ver,
+    "\tOperating System: " + os,
+    "\tJava Version: " + jdk + ", " + pick(["Oracle Corporation", "Eclipse Adoptium", "Microsoft"]) + ", " + pick(["64", "64", "64"]) + "bit",
+    "\tJava VM Version: OpenJDK 64-Bit Server VM (mixed mode), " + pick(["Oracle Corporation", "Eclipse Adoptium", "Microsoft"]),
+    "\tMemory: " + memUsed + " bytes (" + Math.round(memUsed / memMax * 100) + "% of " + memMax + "MB) allocated, " + pick([120, 340, 780, 1450]) + "MB used",
+    "\tCPUs: " + pick([8, 12, 16, 24]) + "",
+    "\tJVM Flags: " + pick(["3 total", "5 total", "2 total"]) + "; -XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump",
+    "\tLaunched Version: " + ver + "-forge-" + forgeVer,
+    "\tBackend library: LWJGL version 3.3.1 build 7",
+    "\tLWJGL: 3.3.1 build 7",
+    "\tOpenGL: " + gl,
+    "\tGL Caps: Using framebuffer using OpenGL 3.2, Using VBOs: Yes",
+    "\tIs Modded: Definitely; Client brand changed to 'forge'",
+    "\tType: Client (map_client.txt)",
+    "\tResource Packs: vanilla, mod_resources",
+    "\tCurrent Language: English (US)",
+    "\tCPU: " + pick(["8x AMD Ryzen 5 5600X", "12x Intel(R) Core(TM) i7-12700K", "16x AMD Ryzen 9 5950X"]),
+    "",
+    "\tMod List: ",
+    "\t\t| State  | ID                | Version      | Source                    |",
+    "\t\t| UCHIJA | minecraft         | " + ver + "   | minecraft.jar             |",
+    "\t\t| UCHIJA | forge             | " + forgeVer + " | forge-" + ver + "-" + forgeVer + ".jar |",
+    "\t\t| UCHIJA | awesome_mod       | 1.7.3        | " + culprit + " |",
+    "\t\t| UCHIJA | optifine          | HD_U_I6      | OptiFine_" + ver + "_HD_U_I6.jar |",
+    "\t\t| UCHIJA | patchwork         | 0.4.2        | patchwork-0.4.2.jar       |",
+    "\t\t| UCHIJA | fastchunk         | 2.1.0        | fastchunk-2.1.0.jar       |",
+    "\t\t| UCHIJA | hudlib            | 3.0.1        | hudlib-3.0.1.jar          |",
+    "\t\t| UCHIJA | architectury      | 9.1.12       | architectury-9.1.12.jar   |",
+    "\t\t| UCHIJA | mixinextras       | 0.2.0        | mixinextras-forge-0.2.0.jar |",
+    "\t\t|\t\t\t| " + modCount + " mods loaded, " + modCount + " mods active |",
+    "",
+    "\tSuspected Mods: " + culprit.replace(/\.jar$/, "") + " (awesome_mod)",
+    "\t\t\tType: CLIENT",
+    "\t\t\tFile: mods/" + culprit,
+    ""
+  ];
+  return lines;
+}
+
+/* ---------- 组装日志 ---------- */
+function buildLog() {
+  // 日志字段里的尖括号没有任何意义，直接在源头清掉，避免注入 innerHTML。
+  const clean = v => String(v).replace(/[<>]/g, "").trim();
+  const player = clean($("#fPlayer").value) || "Steve";
+  const ver = clean($("#fVer").value) || "1.20.1";
+  const culprit = clean($("#fCulprit").value) || "awesome_mod-1.7.3.jar";
+  const reason = clean($("#fReason").value) || "Rendering screen";
+  let mods = parseInt($("#fMods").value, 10);
+  if (!isFinite(mods) || mods < 0) mods = 187;
+  const full = $("#fStack").value === "full";
+  const style = $("#fStyle").value;
+
+  const now = new Date();
+  const pad = (n, w) => String(n).padStart(w || 2, "0");
+  const stamp = now.getFullYear() + "-" + pad(now.getMonth() + 1) + "-" + pad(now.getDate()) + " " +
+                pad(now.getHours()) + ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds());
+  const fileStamp = now.getFullYear() + "-" + pad(now.getMonth() + 1) + "-" + pad(now.getDate()) + "_" +
+                    pad(now.getHours()) + "." + pad(now.getMinutes()) + "." + pad(now.getSeconds());
+
+  const exc = pick(EXCEPTIONS);
+  const why = pick(WHY_LINES);
+  const frameCount = full ? ri(14, 24) : ri(4, 6);
+  const frames = [];
+  for (let i = 0; i < frameCount; i++) frames.push(makeFrame());
+  // 保证前两帧看起来像罪魁祸首模组
+  frames[0].text = "at com.example.awesome_mod.client." + pick(CLASSES) + "." + pick(METHODS) + "(" + pick(FILES) + ":" + ri(80, 620) + ")";
+  frames[1].text = "at com.example.awesome_mod.core." + pick(CLASSES) + "." + pick(METHODS) + "(" + pick(FILES) + ":" + ri(80, 620) + ")";
+
+  const E = t => '<span class="err">' + esc(t) + "</span>";
+  const D = t => '<span class="dim">' + esc(t) + "</span>";
+  const I = t => '<span class="info">' + esc(t) + "</span>";
+  const W = t => '<span class="warn">' + esc(t) + "</span>";
+  const C = t => '<span class="chaos">' + esc(t) + "</span>";
+  const L = [];
+
+  if (style === "forge") {
+    L.push(E("---- Minecraft Crash Report ----"));
+    L.push(E(why));
+    L.push("");
+    L.push("Time: " + stamp);
+    L.push("Description: " + reason);
+    L.push("");
+    L.push(E(exc.type + (exc.msg ? ": " + exc.msg : "")));
+    frames.forEach(f => L.push(D("\t" + f.text)));
+    if (full) {
+      L.push("");
+      const cause = pick(CAUSE_POOL);
+      L.push(D("Caused by: " + cause.type + (cause.msg ? ": " + cause.msg : "")));
+      for (let i = 0; i < ri(3, 6); i++) L.push(D("\t" + makeFrame().text));
+      L.push(D("\t... " + ri(4, 12) + " more"));
+      L.push("");
+      L.push(D("Suppressed: " + pick(["java.lang.IllegalStateException: Already registered", "java.lang.RuntimeException: tick loop aborted", "java.io.IOException: Stream closed"])));
+      for (let i = 0; i < ri(2, 4); i++) L.push(D("\t\t" + makeFrame().text));
+    }
+    L.push("");
+    L.push("A detailed walkthrough of the error, its code path and all known details is as follows:");
+    L.push("---------------------------------------------------------------------------------------");
+    L.push("");
+    L.push("-- Head --");
+    L.push("Thread: " + pick(["Render thread", "Client thread", "Netty Client IO #" + ri(0, 3)]) + "  Stacktrace:");
+    for (let i = 0; i < ri(3, 6); i++) L.push(D("\t" + makeFrame().text));
+    L.push("");
+    L.push("-- Affected level --");
+    L.push("\tLevel name: MpServer");
+    L.push("\tAll players: 1 total; [" + C("ServerPlayer['" + player + "'/" + ri(100, 9999) + ", l='MpServer', x=" + (Math.random() * 2000 - 1000).toFixed(2) + ", y=" + (60 + Math.random() * 40).toFixed(2) + ", z=" + (Math.random() * 2000 - 1000).toFixed(2) + "]") + "]");
+    L.push("\tChunk stats: ServerChunkCache: " + ri(400, 2000) + " Drop: 0");
+    L.push("\tLevel seed: " + ri(1000000, 999999999));
+    L.push("\tLevel generator: ID " + ri(0, 5) + " - default, features: true");
+    L.push("\tLevel generator options: {}");
+    L.push("\tLevel spawn location: World: (" + ri(-200, 200) + ", " + ri(60, 90) + ", " + ri(-200, 200) + ")");
+    L.push("\tLevel time: " + ri(1000, 9999999) + " game time, " + ri(0, 200000) + " day time");
+    L.push("\tLevel weather: Rain time: " + ri(0, 20000) + " (now: false), thunder time: " + ri(0, 10000) + " (now: false)");
+    L.push("");
+    sysDetails(mods, culprit, ver).forEach(s => L.push(D(s)));
+    L.push("");
+    L.push("Stacktrace:");
+    L.push("\tat " + pick(CLASSES) + ".crash(" + pick(FILES) + ":" + ri(100, 9000) + ")");
+    L.push("");
+    L.push("-- System Details --");
+    L.push("Details:");
+    L.push("\tMinecraft Version: " + ver);
+    L.push("\tMemory: " + ri(2000, 8000) + "MB / " + ri(8000, 16384) + "MB");
+    L.push("\tJava Version: " + pick(["17.0.8", "21.0.2"]) + " (64bit)");
+    L.push("\tMod Count: " + mods);
+    L.push("\tSuspected Mod: " + culprit.replace(/\.jar$/, ""));
+  } else if (style === "log4j") {
+    const mk = (lvl, logger, msg) => {
+      const stamp2 = "[" + pad(now.getHours()) + ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds()) + "] [" + pick(["Render thread/INFO", "Client thread/INFO", "main/INFO", "Worker-Main-3/INFO"]) + "]";
+      return { lvl: lvl, stamp: stamp2, logger: logger, msg: msg };
+    };
+    const entries = [
+      mk("INFO", "net.minecraftforge.fml.loading.ModSorter", "Found " + mods + " mods, sorted them in " + ri(40, 900) + " ms"),
+      mk("INFO", "net.minecraftforge.fml.ModLoader", "Loading " + mods + " mods"),
+      mk("WARN", "me.lazy.coder.patchwork.ConfigParser", "Unknown config key 'render_optimization_v3', ignoring"),
+      mk("WARN", "net.optifine.shaders.Shaders", "Shader pack has " + ri(1, 9) + " unresolved uniforms"),
+      mk("INFO", "net.minecraft.client.Minecraft", "Setting user: " + player),
+      mk("INFO", "net.minecraft.client.Minecraft", "Backend library: LWJGL version 3.3.1 build 7"),
+      mk("INFO", "com.example.awesome_mod.core.ModInit", "Registering " + ri(8, 60) + " blocks, " + ri(4, 40) + " items"),
+      mk("WARN", "io.github.someone.fastchunk.ChunkCache", "Cache miss rate " + ri(20, 90) + "%, consider lowering view distance"),
+      mk("INFO", "net.minecraftforge.eventbus.EventBus", "Event bus started"),
+      mk("ERROR", "net.minecraftforge.logging.CrashReportExtender", "Encountered an unexpected exception"),
+      { raw: true, text: exc.type + (exc.msg ? ": " + exc.msg : "") },
+      { frames: frames },
+      { raw: true, text: "A detailed walkthrough of the error, its code path and all known details is as follows:" },
+      { raw: true, text: "---------------------------------------------------------------------------------------" },
+      { raw: true, text: "" },
+      { raw: true, text: "-- System Details --" },
+      { raw: true, text: "\tMinecraft Version: " + ver + " (modded)" },
+      { raw: true, text: "\tJava Version: " + pick(["17.0.8", "21.0.2"]) + " (64bit)" },
+      { raw: true, text: "\tMod Count: " + mods },
+      { raw: true, text: "\tSuspected Mod: " + culprit },
+      { raw: true, text: "" },
+      { raw: true, text: "/!\\ SHUTDOWN /!\\" }
+    ];
+    L.push(I("[" + pad(now.getHours()) + ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds()) + "] [main/INFO] [minecraft/Launch]: Launching " + ver + "-forge"));
+    entries.forEach(e2 => {
+      if (e2.frames) { e2.frames.forEach(f => L.push(D("\t" + f.text))); return; }
+      if (e2.raw) { L.push(e2.text === "" ? "" : W(e2.text)); return; }
+      const line = e2.stamp + " [" + e2.lvl + "] [" + e2.logger + "]: " + e2.msg;
+      L.push(e2.lvl === "ERROR" ? E(line) : e2.lvl === "WARN" ? W(line) : I(line));
+    });
+  } else {
+    L.push(E(exc.type + (exc.msg ? ": " + exc.msg : "")));
+    frames.forEach(f => L.push(D("\tat " + f.text.replace(/^at /, ""))));
+    L.push("");
+    L.push(D("# generated by Anti-Human Tests (fake) — not a real crash report"));
+    L.push(D("# minecraft=" + ver + " mods=" + mods + " suspect=" + culprit));
+  }
+
+  const text = L.join("\n");
+  const header = style === "forge"
+    ? "<span class=\"dim\">// file: crash-reports/crash-" + fileStamp + "-client.txt</span>\n"
+    : "";
+  $("#out").innerHTML = header + text;
+  $("#outBadge").className = "badge ok";
+  $("#outBadge").textContent = style + " ✔ " + lines(text);
+  AH.beep("bad");
+  AH.toast(style === "forge" ? "已生成一份看起来很像真的崩溃报告。别外传。" : "已生成 " + style + " 风格输出。", false);
+}
+
+function lines(html) {
+  return (html.split("\n").length) + " 行";
+}
+
+/* ---------- 复制 ---------- */
+function plainText() {
+  const raw = $("#out").innerText || "";
+  return raw.replace(/^\/\/ file:.*\n/, "");
+}
+let copyTimer = null;
+$("#btnCopy").addEventListener("click", async () => {
+  const btn = $("#btnCopy");
+  const txt = plainText();
+  if (!txt.trim()) { AH.toast("先点生成，再复制。空气复制不出来。", true); return; }
+  try {
+    if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error("no clipboard api");
+    await navigator.clipboard.writeText(txt);
+    btn.textContent = "已复制 ✓";
+    btn.classList.add("ghost");
+    AH.toast("已复制到剪贴板。请只用于自娱自乐。", false);
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => {
+      btn.textContent = "📋 复制日志";
+      btn.classList.remove("ghost");
+    }, 1600);
+  } catch (err) {
+    AH.toast("复制失败，请手动选择", true);
+  }
+});
+
+/* ---------- 随机 ---------- */
+const MOD_NAMES = [
+  "awesome_mod", "patchwork", "fastchunk", "hudlib", "optifine",
+  "infernal_machines", "skyfactory_utils", "chunk_preloader", "shiny_shaders"
+];
+function randomizeForm() {
+  const ver = pick(["1.20.1", "1.19.2", "1.18.2", "1.16.5", "1.12.2"]);
+  const mod = pick(MOD_NAMES);
+  const maj = ri(0, 4), min = ri(0, 9), pat = ri(0, 20);
+  $("#fVer").value = ver;
+  $("#fPlayer").value = pick(["Steve", "Alex", "Notch", "Dinnerbone", "Herobrine_" + ri(10, 99), "Player" + ri(100, 999)]);
+  $("#fMods").value = ri(3, 420);
+  $("#fCulprit").value = mod + "-" + maj + "." + min + "." + pat + ".jar";
+  $("#fReason").value = pick([
+    "Rendering screen", "Ticking entity", "Ticking player", "Updating screen events",
+    "Rendering overlay", "Loading textures", "Registering mod config", "Applying mixin"
+  ]);
+  $("#fStack").value = pick(["full", "full", "short"]);
+  $("#fStyle").value = pick(["forge", "forge", "forge", "log4j", "bare"]);
+  AH.toast("参数已随机。罪魁祸首这次是：" + mod, false);
+}
+
+/* ---------- 事件 ---------- */
+$("#btnGen").addEventListener("click", buildLog);
+$("#btnRand").addEventListener("click", () => { randomizeForm(); buildLog(); });
+
+$("#btnCrash").addEventListener("click", AH.guard(() => {
+  AH.beep();
+  AH.toast("演示模式：这个按钮的完整效果需要先解锁。先看看示例日志吧。");
+  const out = document.getElementById("out");
+  if (out) { out.scrollIntoView({ behavior: "smooth", block: "start" }); }
+}, () => {
+  alert("⚠️ 光敏性癫痫患者绝对不要点！\n\n出事了作者概不负责。");
+  AH.shake(true);
+  AH.overlay(true);
+  AH.invert(true);
+  AH.spawn(36);
+  AH.beep("bad");
+  AH.toast("Minecraft 没有崩，你的浏览器只是在演。1.5 秒后恢复。", true);
+  setTimeout(() => {
+    AH.shake(false);
+    AH.overlay(false);
+    AH.invert(false);
+    AH.toast("已恢复。真正的崩溃报告不会自带倒计时。", false);
+  }, 1500);
+}));
+
+/* ---------- 启动：先来一份 ---------- */
+buildLog();
+</script>
+</body>
+</html>

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>未定义行为专场 [混沌] · Anti-Human Tests</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="ahnav" id="ahNav"></nav>
+
+<div class="wrap">
+
+  <div class="warnline">⚠️ 仅供娱乐，请勿用于伪造真实崩溃日志 / 现实生活。</div>
+  <div class="warnline danger">⚠️ 本页全是未定义行为。请勿在生产代码里模仿，编译器的报复方式你想象不到。</div>
+
+  <div class="card danger">
+    <h1 class="title-glitch" data-t="未定义行为专场">未定义行为专场</h1>
+    <p class="muted">正经版考的是「C++ 到底会怎么算」。本页考的是另一件事：<b>标准根本没说它会怎么算。</b></p>
+    <p>这里所有题目都属于三类：<b>未定义行为（UB）</b>、<b>未指定行为</b>、<b>实现定义行为</b>。所以这些题的「标准答案」是——这题没有答案。但作为一个有职业素养的测试页，我们仍然要求你选出那个最诚实、最符合标准的选项。</p>
+    <p class="small muted">提示：当选项里出现「标准不保证，一切皆有可能」时，请先深呼吸，然后想一想这道题是不是故意在诱导你显得很懂。</p>
+    <div class="row">
+      <span class="badge">6 题</span>
+      <span class="badge bad">未定义行为 ×6</span>
+      <span class="badge warn">通用陷阱选项 ×6</span>
+      <span class="badge chaos">含优化器专题</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="qhead"><span class="badge chaos">分类速查</span><span class="badge">30 秒读完</span></div>
+    <div class="grid three">
+      <div>
+        <span class="badge bad">未定义行为 UB</span>
+        <p class="small muted">标准对行为不做任何要求，编译器可以随便乱来。<br>例：有符号整数溢出、读未初始化变量、越界访问、违反严格别名。<br><b>本页 6 道题全部属于这一类。</b></p>
+      </div>
+      <div>
+        <span class="badge warn">未指定行为</span>
+        <p class="small muted">标准提供了若干种合法结果，由实现自己挑一个，但必须挑。<br>例：<code>f(g(), h())</code> 中两个实参的求值顺序；<code>new</code> 失败时是否抛异常之外的细节。<br>它不会让你的程序崩，只是让你猜不到顺序。</p>
+      </div>
+      <div>
+        <span class="badge">实现定义行为</span>
+        <p class="small muted">标准要求实现必须文档化自己的选择，且行为是确定的。<br>例：<code>sizeof(int)</code>、<code>char</code> 是否有符号、右移负数。<br>换个编译器换个平台就可能变，但它不会把你送进 UB 的怀抱。</p>
+      </div>
+    </div>
+    <p class="small muted">记住这条分界线：<b>未定义 = 标准放弃你；未指定 = 标准让你猜；实现定义 = 标准让你查文档。</b>本页的陷阱选项之所以通用，是因为在 UB 面前，「标准不保证」永远是唯一的满分回答。</p>
+  </div>
+
+  <div class="card">
+    <div class="qhead">
+      <span class="badge">进度</span>
+      <span class="badge ok">已答 <b id="doneN">0</b> / 6</span>
+      <span class="badge chaos">得分 <b id="scoreN">0</b></span>
+    </div>
+    <div class="prog"><i id="barI" style="width:0%"></i></div>
+  </div>
+
+  <div class="card">
+    <div class="qhead"><span class="badge chaos">优化开关</span><span class="badge warn">-O2</span></div>
+    <p class="small muted">把优化打开，看看编译器对 UB 的真实态度。</p>
+    <div class="row">
+      <button class="btn warn" id="optBtn">⚙️ 打开 -O2 / 优化开关</button>
+      <span class="badge" id="optBadge">当前：-O0</span>
+    </div>
+    <p class="small mt12 hidden" id="optNote"></p>
+  </div>
+
+  <div id="quiz"></div>
+
+  <div id="result"></div>
+
+  <div class="card">
+    <div class="qhead"><span class="badge">工具箱</span><span class="badge warn">没有一个是安全的</span></div>
+    <div class="btnrow">
+      <button class="btn chaos" id="oracleBtn">🔮 让编译器随机决定</button>
+      <button class="btn ghost" id="restartBtn">🔁 重新开始</button>
+      <button class="btn chaos" id="partyBtn">🎉 庆祝一下（会乱飞）</button>
+      <button class="btn danger" id="stopBtn">🛑 冷静模式（停止一切特效）</button>
+    </div>
+    <div class="term mt12" id="oracleOut"><span class="dim">// 等待编译器开口……</span></div>
+  </div>
+
+</div>
+
+<div class="foot">
+  <p>Anti-Human Tests · 反人类测试系列 · <a -chaos.html>返回首页</a></p>
+  <p class="small">如果有人因为这个项目友尽，作者概不负责。</p>
+</div>
+
+<script>window.AH_MODE="chaos";</script><script src="../assets/chaos.js"></script>
+<script>
+AH.init({ title: "未定义行为专场", page: "cpp-quiz/" });
+
+(function () {
+  "use strict";
+
+  var UB = "标准不保证，一切皆有可能";
+
+  var QS = [
+    {
+      topic: "有符号整数溢出",
+      diff: "UB",
+      code:
+`int f(int x) {
+  if (x + 1 &gt; x) return 1;
+  return 0;
+}
+// g++ -O2 下 f(INT_MAX) 返回？`,
+      opts: ["0，因为发生了溢出", "1，因为数学上 x+1 永远大于 x", UB, "编译错误"],
+      ans: 2,
+      why: " 有符号整数溢出是未定义行为，不是「回绕成负数」这种温柔的行为。编译器据此可以假设 x + 1 永远不发生溢出，于是把条件优化成恒真，直接 return 1；也可以返回 0；也可以把整个函数删掉。这不是编译器坏，是标准授权它这么干。"
+    },
+    {
+      topic: "求值顺序 / 序列点",
+      diff: "UB",
+      code:
+`int i = 1;
+int a = i++ + i++;
+std::cout &lt;&lt; a &lt;&lt; " " &lt;&lt; i &lt;&lt; std::endl;`,
+      opts: ["3 3", "2 3", "3 2", UB],
+      ans: 3,
+      why: " 两个 i++ 之间没有任何定序关系，却都修改了同一个对象 i，未定义行为。注意这不是「先算左边还是先算右边」的未指定行为问题，而是彻头彻尾的 UB——编译器可以在 -O2 下算出任何结果，包括让 i 保持不变。"
+    },
+    {
+      topic: "严格别名 strict aliasing",
+      diff: "UB",
+      code:
+`float f = 1.0f;
+int* p = reinterpret_cast&lt;int*&gt;(&amp;f);
+*p = 0x3F800000;
+std::cout &lt;&lt; f &lt;&lt; std::endl;  // -O2`,
+      opts: ["1", "0", UB, "编译错误：reinterpret_cast 不允许"],
+      ans: 2,
+      why: " reinterpret_cast 本身完全合法（它老老实实编译），但你通过 int 左值去访问一个 float 对象，违反了严格别名规则，是 UB。开了 -O2 之后编译器完全可以让 f 一直待在寄存器里，于是你写进去的位模式永远没人读，输出还是 1。位模式没变，只是没人承认它变了。"
+    },
+    {
+      topic: "未初始化读取",
+      diff: "UB",
+      code:
+`int x;
+std::cout &lt;&lt; x &lt;&lt; std::endl;`,
+      opts: ["0，静态存储会清零", "一定输出随机垃圾值", UB, "编译错误：x 未初始化"],
+      ans: 2,
+      why: " 局部变量 int x; 没有初始化，读取它是 UB。常见的误解是「它会读到内存里的垃圾值」——实际上它可能被优化成一个常量、可能读到寄存器里的旧值、也可能让编译器推出矛盾然后删掉后面的代码。这里要跟 static int x; 区分开：静态存储期对象才会保证零初始化。"
+    },
+    {
+      topic: "std::sort 的比较器",
+      diff: "UB",
+      code:
+`std::vector&lt;int&gt; v = {3, 1, 2, 1, 5};
+std::sort(v.begin(), v.end(),
+  [](int a, int b) { return a &lt;= b; });
+// 结果？`,
+      opts: [
+        "升序排列，完全正确",
+        "降序排列",
+        "比较器要满足严格弱序，&lt;= 违反自反性，行为未定义（实战中常常越界崩溃）",
+        "编译错误"
+      ],
+      ans: 2,
+      why: " 比较器必须满足严格弱序，其中一条是 comp(x, x) 必须为 false。而 &lt;= 让 comp(x, x) 恒为真，等于告诉 sort「这个元素应该排在自己前面」。std::sort 会据此在分区时把迭代器一路推过末尾，于是越界，于是段错误，于是你在深夜开始怀疑人生。正确写法是 a &lt; b。"
+    },
+    {
+      topic: "new[] / delete 不匹配",
+      diff: "UB",
+      code:
+`struct S { ~S() { std::cout &lt;&lt; "~S"; } };
+S* p = new S[3];
+delete p;   // 注意：是 delete，不是 delete[]`,
+      opts: [
+        "三次 ~S 都会正常打印",
+        "一次都不会打印，因为 S 没有虚析构函数",
+        UB,
+        "编译错误：delete 与 new[] 不匹配"
+      ],
+      ans: 2,
+      why: " 用 delete 释放 new[] 分配的内存是未定义行为。它不会报编译错误——这才是最阴的地方。可以确定的是：delete[] 会析构全部 3 个元素，而 delete 最多只会析构第 1 个（也就是 p 指向的那个），剩下两个的析构函数不会被执行。但标准连「第 1 个会不会被析构」都不保证，更不保证不会崩。对于 int 这种平凡析构类型，很多实现恰好相安无事，那只是巧合，不是许可。" 
+    }
+  ];
+
+  var TOTAL = QS.length;
+  var DIFFCLS = { "UB": "bad", "未指定": "warn", "实现定义": "" };
+  var LETTER = "ABCD";
+
+  var quizEl = document.getElementById("quiz");
+  var resEl = document.getElementById("result");
+  var scoreEl = document.getElementById("scoreN");
+  var doneEl = document.getElementById("doneN");
+  var barEl = document.getElementById("barI");
+
+  var answered = 0;
+  var score = 0;
+  var optOn = false;
+
+  var VERDICTS = [
+    "你的代码在特定编译器上会爆炸",
+    "你能背诵标准文档第 1.9 节",
+    "你知道 UB 存在，但你还是会写出来",
+    "你的代码在 -O0 下活着，在 -O2 下超度",
+    "建议把编译器版本号纹在胳膊上"
+  ];
+
+  var ORACLES = [
+    "编译器：这个分支我删了，你没意见吧？",
+    "编译器：我假定不会溢出，所以我把它优化成了恒真。",
+    "编译器：我看到了 UB，我看到了一切，我什么都没说。",
+    "编译器：这个变量我放在寄存器里了，你的指针写得挺好，就是没人看。",
+    "编译器：标准说随我，那我就随缘。",
+    "编译器：你的程序在我的优化阶段就已经结束了。",
+    "编译器：换台机器，换种心情，换个输出。"
+  ];
+
+  function verdictOf(s) {
+    if (s === TOTAL) {
+      return { t: "你能背诵标准文档第 1.9 节", cls: "ok", d: "全对。你已经不需要这份工作来证明什么了，你需要的是把这份答案打印出来挂在工位上。" };
+    }
+    if (s >= TOTAL - 1) {
+      return { t: "你的代码在特定编译器上会爆炸", cls: "warn", d: "几乎全对。你的代码在 -O0 下活得很好，在 -O2 下取决于编译器今天心情如何。" };
+    }
+    if (s >= TOTAL - 3) {
+      return { t: "你知道 UB 存在，但你还是会写出来", cls: "warn", d: "你知道这是坑，但还是踩了——这才是真实世界的 C++ 开发日常。" };
+    }
+    if (s >= 2) {
+      return { t: "你的代码在 -O0 下活着，在 -O2 下超度", cls: "bad", d: "建议以后所有构建都锁死在 -O0，并且管这叫「稳定压倒一切」。" };
+    }
+    return { t: "建议把编译器版本号纹在胳膊上", cls: "chaos", d: "0-1 分。记住这句话：UB 不是「结果随机」，而是「标准不再对你的程序负责」。" };
+  }
+
+  function updateStatus() {
+    scoreEl.textContent = String(score);
+    doneEl.textContent = String(answered);
+    barEl.style.width = (answered / TOTAL * 100) + "%";
+  }
+
+  function pick(qi, oi, card, optsBox) {
+    if (card.getAttribute("data-done") === "1") return;
+    card.setAttribute("data-done", "1");
+
+    var q = QS[qi];
+    var btns = optsBox.querySelectorAll(".opt");
+    var i;
+    for (i = 0; i < btns.length; i++) {
+      btns[i].disabled = true;
+      if (i === q.ans) btns[i].classList.add("ok");
+    }
+
+    var right = (oi === q.ans);
+    if (right) {
+      score++;
+      AH.toast("对了。你居然真的记得标准原文", false);
+      AH.beep("ok");
+    } else {
+      btns[oi].classList.add("bad");
+      AH.toast("错的。这题的标准答案就是「没有答案」", true);
+      AH.beep("bad");
+      AH.shake(true);
+      setTimeout(function () { AH.shake(false); }, 250);
+    }
+
+    answered++;
+    updateStatus();
+
+    var why = card.querySelector(".why");
+    why.classList.remove("hidden");
+    why.innerHTML =
+      (right ? '<b class="ok">✅ 正确。</b>' : '<b class="err">❌ 错误。</b>') +
+      ' 正解是 <b>' + LETTER.charAt(q.ans) + '</b>。' + q.why +
+      (optOn ? '<br><b class="warn">优化开启后，你的 UB 会被编译器当成「永假条件」删除。</b> 你现在看到的所有「结果」都只是这一次编译的巧合。' : '');
+
+    if (answered === TOTAL) showResult();
+  }
+
+  function build() {
+    quizEl.innerHTML = "";
+    resEl.innerHTML = "";
+    answered = 0;
+    score = 0;
+
+    var qi, oi;
+    for (qi = 0; qi < QS.length; qi++) {
+      var q = QS[qi];
+      var card = document.createElement("div");
+      card.className = "card danger mt12";
+
+      var h = "";
+      h += '<div class="qhead">';
+      h += '<span class="badge">Q' + (qi + 1) + ' / ' + TOTAL + '</span>';
+      h += '<span class="badge ' + (DIFFCLS[q.diff] || "") + '">' + q.diff + '</span>';
+      h += '<span class="badge chaos">' + q.topic + '</span>';
+      h += '</div>';
+      h += '<div class="qtext">这段代码的行为，标准怎么说？</div>';
+      h += '<pre class="qcode">' + q.code + '</pre>';
+      h += '<div class="opts"></div>';
+      h += '<div class="why hidden"></div>';
+      card.innerHTML = h;
+
+      var optsBox = card.querySelector(".opts");
+      for (oi = 0; oi < q.opts.length; oi++) {
+        (function (index) {
+          var b = document.createElement("button");
+          b.className = "opt";
+          b.innerHTML = '<span class="k">' + LETTER.charAt(index) + '</span>' + q.opts[index];
+          b.addEventListener("click", function () { pick(qi, index, card, optsBox); });
+          optsBox.appendChild(b);
+        })(oi);
+      }
+
+      quizEl.appendChild(card);
+    }
+
+    updateStatus();
+  }
+
+  function showResult() {
+    var v = verdictOf(score);
+    resEl.innerHTML =
+      '<div class="card danger mt12">' +
+        '<div class="qhead">' +
+          '<span class="badge chaos">最终结算</span>' +
+          '<span class="badge ' + v.cls + '">' + v.t + '</span>' +
+        '</div>' +
+        '<div class="score">得分：' + score + ' / ' + TOTAL + '</div>' +
+        '<p class="muted">' + v.d + '</p>' +
+        '<p class="small muted">随机荣誉头衔：' + AH.pick(VERDICTS) + '</p>' +
+        '<div class="btnrow">' +
+          '<button class="btn" id="againBtn">🔁 再来一遍</button>' +
+          '<button class="btn chaos" id="againParty">🎉 庆祝一下（会乱飞）</button>' +
+        '</div>' +
+      '</div>';
+
+    document.getElementById("againBtn").addEventListener("click", function () {
+      build();
+      AH.toast("重开。结论还是那句话：这题没有答案", false);
+    });
+    document.getElementById("againParty").addEventListener("click", party);
+
+    if (resEl.scrollIntoView) resEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function party() {
+    AH.spawn(20);
+    AH.beep("ok");
+    AH.toast(AH.pick(AH.MEMES.concat(["庆祝也是 UB，但它跑起来很好看"])), false);
+  }
+
+  function oracle() {
+    var line = AH.pick(ORACLES);
+    var out = document.getElementById("oracleOut");
+    out.innerHTML =
+      '<span class="dim">$ g++ -O' + AH.rnd(0, 3) + ' ub.cpp &amp;&amp; ./a.out</span>\n' +
+      '<span class="warn">编译器判决：</span> <span class="chaos">' + line + '</span>\n' +
+      '<span class="dim">// 换一个编译器版本，这句话可能会不一样，也可能还是一样，没人保证。</span>';
+    AH.overlay(true);
+    setTimeout(function () { AH.overlay(false); }, 260);
+    AH.spawn(8);
+    AH.beep("bad");
+    AH.toast(line, true);
+  }
+
+  document.getElementById("optBtn").addEventListener("click", function () {
+    optOn = !optOn;
+    var badge = document.getElementById("optBadge");
+    var note = document.getElementById("optNote");
+    badge.textContent = "当前：" + (optOn ? "-O2" : "-O0");
+    badge.className = "badge " + (optOn ? "bad" : "");
+    note.classList.remove("hidden");
+    note.innerHTML = optOn
+      ? '<b class="err">优化开启后，你的 UB 会被编译器当成「永假条件」删除。</b> 上面所有题目的答案都会变得更没有意义——因为编译器根本不会执行它认为不可能发生的分支。'
+      : '<b class="warn">优化关闭，UB 暂时表现得像你期望的那样。</b> 这不是稳定，这只是调试版的温柔。';
+    if (optOn) {
+      AH.spawn(6);
+      AH.toast("优化已开启，愿你的假设依然成立", true);
+    } else {
+      AH.toast("优化已关闭，机器变慢了，你的错觉回来了", false);
+    }
+  });
+
+  document.getElementById("oracleBtn").addEventListener("click", oracle);
+  document.getElementById("restartBtn").addEventListener("click", function () {
+    build();
+    AH.toast("已重置。标准没有变，只是你的答案变了", false);
+  });
+  document.getElementById("partyBtn").addEventListener("click", party);
+  document.getElementById("stopBtn").addEventListener("click", function () {
+    AH.stopAll();
+    AH.toast("冷静模式：特效已关闭，UB 依然是 UB", false);
+  });
+
+  build();
+})();
+</script>
+</body>
+</html>

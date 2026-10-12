@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MC 崩溃处理大挑战 · 混合套路版 · Anti-Human Tests</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="ahnav" id="ahNav"></nav>
+
+<div class="wrap">
+
+  <div class="warnline danger">⚠️ 仅供娱乐。本页所有崩溃日志都是编的，请勿用于伪造真实日志或欺骗他人。</div>
+
+  <div class="card danger">
+    <h1>🎭 MC 崩溃处理大挑战 <span class="badge chaos">混合套路版</span></h1>
+    <p class="muted">正经版教你读栈，反套路版教你怀疑栈。这一版把两者<b>掺在一起</b>，而且不告诉你是哪一题。</p>
+    <p class="small">本页混合两种题：<b>公平题</b>靠读栈，<b>陷阱题</b>靠怀疑栈。
+      公平题的真凶就在日志里，写得明明白白；陷阱题的栈顶通常只是个无辜报信者。
+      <b>你要自己决定：这次该信日志，还是该防着它。</b></p>
+    <p class="small muted">其他版本：<a href="index.html">正经版</a> · <a href="evil.html">反套路版</a> · <a href="chaos.html">混沌版</a></p>
+    <div class="qhead mt12">
+      <span>进度 <b id="qIdx">1</b>/<b id="qTot">0</b></span>
+      <span class="badge" id="diffBadge">—</span>
+      <span class="score">得分 <b id="score">0</b></span>
+      <div class="prog"><i id="progBar"></i></div>
+    </div>
+  </div>
+
+  <div class="card" id="stage">
+    <div class="quiz">
+      <div class="qhead">
+        <span class="badge chaos" id="caseTag">CASE</span>
+        <span class="muted small" id="caseHint"></span>
+      </div>
+      <p class="qtext" id="caseDesc"></p>
+      <pre class="qcode" id="caseLog"></pre>
+      <p class="small muted">👉 这一题，日志到底能不能信？先给出你的结论。</p>
+      <div class="opts" id="opts"></div>
+      <div class="why hidden" id="why"></div>
+      <div class="qfoot">
+        <button class="btn hidden" id="nextBtn">下一题 →</button>
+        <button class="btn ghost sm hidden" id="againBtn">🔁 重开</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card hidden" id="finalCard">
+    <h2>🏁 你被耍了几次？</h2>
+    <p class="verdict" id="verdict"></p>
+    <p class="score" id="finalScore"></p>
+    <p class="small muted" id="finalNote"></p>
+    <div class="btnrow mt12">
+      <button class="btn" id="restartBtn">🔁 再来一轮</button>
+      <a class="btn ghost" href="evil.html">😈 专攻反套路版</a>
+      <a class="btn ghost" href="chaos.html">🌀 直接进混沌版</a>
+      <button class="btn chaos sm" id="partyBtn">🎉 庆祝一下</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot">
+  <p>Anti-Human Tests · 反人类测试系列 · <a href="../index.html">返回首页</a></p>
+  <p class="small">如果有人因为这个项目友尽，作者概不负责。</p>
+</div>
+
+<script src="../assets/chaos.js"></script>
+<script>
+AH.init({ title: "MC 崩溃处理大挑战 · 混合套路版", page: "mc-crash/" });
+
+/* =========================================================================
+   混合套路版题库：
+   奇数题（1/3/5/7）是公平题 —— 真凶能从日志直接读出来。
+   偶数题（2/4/6）是陷阱题 —— 栈顶是报信的，凶手在别处。
+   界面上不做任何区分，公平与否只在 why 里揭晓。
+   ========================================================================= */
+var CASES = [
+  {
+    tag: "MIX-001", diff: "easy", fair: true,
+    desc: "整合包启动即崩，日志停在某个模组的初始化阶段，报错行里就有模组名。",
+    hint: "提示：栈里的包名属于谁？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Don't do that then.\n" +
+"\n" +
+"Time: 2026-02-16 10:02:14\n" +
+"Description: Initializing game\n" +
+"\n" +
+"java.lang.NoClassDefFoundError: com/petrock/core/RockRegistry\n" +
+"\tat com.petrock.PetRockMod.onCommonSetup(PetRockMod.java:41)\n\tat net.minecraftforge.fml.javafmlmod.FMLModContainer.acceptEvent(FMLModContainer.java:120)\n" +
+"\tat net.minecraftforge.eventbus.EventBus.post(EventBus.java:315)\n" +
+"\tat net.minecraftforge.fml.ModLoader.dispatchParallelEvent(ModLoader.java:539)\n" +
+"Caused by: java.lang.ClassNotFoundException: com.petrock.core.RockRegistry\n" +
+"\tat java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)\n\tat net.minecraftforge.fml.loading.ModClassLoader.loadModClasses(ModClassLoader.java:88)\n" +
+"\t... 24 more",
+    opts: ["petrock 自己发出的：它引用的 RockRegistry 根本没被打进 jar", "Forge 的 ModClassLoader 把模组的类加载坏了", "服务器用的 Java 版本太低，读不了新类文件", "原版在新版本里移除了注册表 API"],
+    ok: 0,
+    why: "<b>【这题是公平的】</b>栈顶 <code>com.petrock.PetRockMod</code> 去拿的是<b>它自己包里的</b> <code>com.petrock.core.RockRegistry</code>，<code>Caused by</code> 又原样重复了一遍：<code>ClassNotFoundException</code>。Forge 的 <code>ModClassLoader</code> 只是负责读 jar 的那个人，读不到才报错的——<b>它是报信的，不是凶手</b>。公平题的标志就是：日志自洽，没有出现互相矛盾的第三方线索。对比一下：如果这里写的是 <code>UnsupportedClassVersionError</code>，锅就换人了（下一题）。"
+  },
+  {
+    tag: "MIX-002", diff: "easy", fair: false,
+    desc: "换了台电脑、什么都没改，同一个整合包开服就崩，报错和模组有关。",
+    hint: "提示：65.0 和 61.0 分别是什么？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Surprise! Haha. Well, this is awkward.\n" +
+"\n" +
+"Time: 2026-02-16 10:20:51\n" +
+"Description: Initializing game\n" +
+"\n" +
+"java.lang.UnsupportedClassVersionError: com/biomesplus/core/BiomesPlus has been compiled by a " +
+"more recent version of the Java Runtime (class file version 65.0), this version of the Java " +
+"Runtime only recognizes class file versions up to 61.0\n" +
+"\tat java.base/java.lang.ClassLoader.defineClass1(Native Method)\n\tat java.base/java.lang.ClassLoader.defineClass(ClassLoader.java:1022)\n" +
+"\tat net.minecraftforge.fml.loading.ModClassLoader.loadModClasses(ModClassLoader.java:88)\n" +
+"\tat net.minecraftforge.fml.ModLoader.runModLoading(ModLoader.java:413)",
+    opts: ["biomesplus 的作者用新 Java 编译，是他的问题，只能等作者降级", "这台服务器的 JVM 是 Java 17（61.0），而模组按 Java 21（65.0）编译，升级 Java 就行", "Forge 版本太旧，解析不了新格式的类文件", "模组 jar 下载时被截断了"],
+    ok: 1,
+    why: "<b>【这题是陷阱】</b>选项 A 和 B 在描述同一件事实，但责任归属完全相反，这正是这类日志最容易骗人的地方。类文件版本 <b>65.0 = Java 21</b>，<b>61.0 = Java 17</b>。模组是照自己声明的目标版本正常编译的，<b>它没写错</b>；是这台机器上的运行时太旧。所以修法是升级 Java，而不是跑去模组评论区刷差评。记住：<code>UnsupportedClassVersionError</code> 出现时，被抱怨的那个模组往往是清白的。"
+  },
+  {
+    tag: "MIX-003", diff: "medium", fair: true,
+    desc: "装了「快速草地」后，加载区块就崩，而且只有装了光影前置才复现。",
+    hint: "提示：这个签名是谁的？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// This doesn't make any sense!\n" +
+"\n" +
+"Time: 2026-02-16 10:44:07\n" +
+"Description: Ticking chunk\n" +
+"\n" +
+"java.lang.NoSuchMethodError: 'void net.optifine.render.ChunkRenderDispatcher.rebuild" +
+"(net.minecraft.world.level.chunk.LevelChunk, boolean)'\n" +
+"\tat com.fastgrass.mixin.ChunkRenderMixin.injectRebuild(ChunkRenderMixin.java:57)\n\tat net.optifine.render.ChunkRenderDispatcher.rebuild(ChunkRenderDispatcher.java:210)\n" +
+"\tat net.minecraft.client.renderer.LevelRenderer.renderChunkLayer(LevelRenderer.java:884)",
+    opts: ["fastgrass 的 mixin 按原版签名注入，而 OptiFine 重写了这个方法，签名对不上——典型模组冲突", "OptiFine 自己坏了，和 fastgrass 无关", "原版区块渲染的 bug", "Java 版本不匹配导致的"],
+    ok: 0,
+    why: "<b>【这题是公平的】</b><code>NoSuchMethodError</code> 的信息足够定案：mixin 找的是<b>带 boolean 的</b><code>rebuild(LevelChunk, boolean)</code>，说明它是照某一方的签名编译的，而运行时另一边提供了不同的签名。帧顺序也印证了这点——注入点挂在 OptiFine 的实现上。<b>双方都没写错，是它们的假设互相打架</b>，这就是模组冲突。公平在于：日志把注入点、签名、被覆盖的实现全都摊开了，不需要靠猜。（要是看到的是 <code>Mixin apply failed</code>，那是加载期注入失败，属于另一类问题。）"
+  },
+  {
+    tag: "MIX-004", diff: "medium", fair: false,
+    desc: "服务器玩着玩着会断开所有玩家，重启后正常一段时间，日志里出现一个存档相关模组。",
+    hint: "提示：注意「重启后变好」这个特征。",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// I blame Dinnerbone.\n" +
+"\n" +
+"Time: 2026-02-16 11:12:36\n" +
+"Description: Exception in server tick loop\n" +
+"\n" +
+"java.lang.RuntimeException: Failed to save chunk (0, 12)\n" +
+"\tat com.terrafirma.save.DeltaChunkWriter.flush(DeltaChunkWriter.java:151)\n\tat net.minecraft.server.level.ChunkMap.save(ChunkMap.java:1024)\n" +
+"\tat net.minecraft.server.level.ServerChunkCache.save(ServerChunkCache.java:611)\n" +
+"\tat net.minecraft.server.MinecraftServer.tickServer(MinecraftServer.java:1512)\n" +
+"Caused by: java.io.IOException: No space left on device\n" +
+"\tat java.base/java.io.FileOutputStream.writeBytes(Native Method)\n\tat java.base/java.io.FileOutputStream.write(FileOutputStream.java:365)\n" +
+"\tat com.terrafirma.save.DeltaChunkWriter.flush(DeltaChunkWriter.java:147)\n" +
+"\t... 3 more",
+    opts: ["terrafirma 的增量存档逻辑有缺陷，把区块写坏了", "服务器所在分区已经写满，操作系统拒绝了这次写入", "存档格式升级失败", "区块数据校验不一致"],
+    ok: 1,
+    why: "<b>【这题是陷阱】</b>栈顶那个模组名字非常显眼，但它出现在这里的原因是<b>「它负责写盘，然后写失败了」</b>——报信者。真正定案的是最内层：<code>Caused by: java.io.IOException: No space left on device</code>，由 JVM 的 <code>FileOutputStream.writeBytes</code> 原生方法抛出。这也是典型的陷阱特征：<b>「重启后恢复一阵」</b>——重启清理日志和临时文件腾出了一点空间，过会儿又满。把 terrafirma 换成别的模组，这个崩溃照样会发生。"
+  },
+  {
+    tag: "MIX-005", diff: "medium", fair: true,
+    desc: "长时间挂机后内存稳步占满，最后随机崩，栈里有个缓存类。",
+    hint: "提示：Caused by 里那句话是谁写的？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Out of memory!\n" +
+"\n" +
+"Time: 2026-02-16 12:03:19\n" +
+"Description: Exception ticking world\n" +
+"\n" +
+"java.lang.OutOfMemoryError: Java heap space\n" +
+"\tat java.base/java.util.Arrays.copyOf(Arrays.java:3537)\n" +
+"\tat it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap.grow(Long2ObjectOpenHashMap.java:410)\n" +
+"\tat com.memorypit.cache.ChunkSnapshotCache.put(ChunkSnapshotCache.java:64)\n" +
+"\tat com.memorypit.tick.ChunkWatchHandler.tick(ChunkWatchHandler.java:31)\n" +
+"\tat net.minecraftforge.eventbus.TickEventBridge.onTick(TickEventBridge.java:44)\n" +
+"Caused by: com.memorypit.cache.ChunkSnapshotCache never evicts entries\n" +
+"\tat com.memorypit.cache.ChunkSnapshotCache.put(ChunkSnapshotCache.java:64)",
+    opts: ["把启动参数里的 -Xmx 加大就能解决", "memorypit 的 ChunkSnapshotCache 只进不出，是内存泄漏", "fastutil 的哈希表实现有 bug", "Forge 的 tick 事件总线在泄漏"],
+    ok: 1,
+    why: "<b>【这题是公平的】</b>看到 <code>OutOfMemoryError</code> 就想加 <code>-Xmx</code>，但这份日志已经直接把答案写出来了：<code>Caused by: ChunkSnapshotCache never evicts entries</code>——<b>只进不出就是泄漏</b>，堆再大也只是把爆炸时间往后推。判断公平题的要点：<b>异常链自己给出了「行为描述」，而不只是一个症状</b>。fastutil 只是被撑爆的容器，Forge 只是转发事件，两个都不是凶手。（记住这一题，下一题会用同样的症状骗你。）"
+  },
+  {
+    tag: "MIX-006", diff: "hard", fair: false,
+    desc: "同样是一玩就崩，同样是 OutOfMemoryError，同样指向一个渲染相关的模组。",
+    hint: "提示：上一题的教训，这一题还成立吗？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// This doesn't make any sense!\n" +
+"\n" +
+"Time: 2026-02-16 12:31:08\n" +
+"Description: Rendering level\n" +
+"\n" +
+"java.lang.OutOfMemoryError: Failed to allocate a 33554432 byte allocation with 16777216 free bytes and 15MB until OOM\n" +
+"\tat org.lwjgl.system.MemoryUtil.nmemAllocChecked(MemoryUtil.java:715)\n" +
+"\tat org.lwjgl.system.MemoryUtil.memAlloc(MemoryUtil.java:697)\n" +
+"\tat com.aetherlight.terrain.TerrainBufferPool.acquire(TerrainBufferPool.java:118)\n" +
+"\tat net.minecraft.client.renderer.chunk.SectionRenderDispatcher$RenderSection.compile" +
+"(SectionRenderDispatcher.java:430)\n" +
+"\tat net.minecraft.client.renderer.LevelRenderer.compileSections(LevelRenderer.java:1490)\n" +
+"\tat net.minecraft.client.Minecraft.runTick(Minecraft.java:1102)",
+    opts: ["Java 堆不够用了，把 -Xmx 调大就好", "这是 LWJGL 的原生 malloc 分配失败，完全在 JVM 堆之外，-Xmx 管不到；该限制缓冲池和渲染距离", "原版区块渲染线程崩了", "CPU 过热导致内存分配失败"],
+    ok: 1,
+    why: "<b>【这题是陷阱】</b>这是本页最阴的一手：上一题也是 OOM，而且上一题的答案是「真的是内存泄漏」。但这一份日志里<b>一句 <code>java.base/java.nio</code> 的堆分配都没有</b>，整条链是 <code>MemoryUtil.nmemAllocChecked</code>——LWJGL 直接向操作系统要原生内存（malloc），<b>那块内存根本不在 Java 堆里</b>，<code>-Xmx</code> 对它没有管辖权。所以在 <code>-Xmx</code> 没跑满的情况下崩溃，是完全可能发生的。正确方向：限制渲染距离、给模组的缓冲池设上限、更新显卡驱动。教训是：<b>别把上一题的经验变成肌肉记忆</b>。"
+  },
+  {
+    tag: "MIX-007", diff: "hard", fair: true,
+    desc: "改了配置文件后，客户端每次启动都在读配置那一步崩，日志里第一条异常是系统级的。",
+    hint: "提示：谁拒绝了这次写入？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Quite annoying.\n" +
+"\n" +
+"Time: 2026-02-16 13:07:44\n" +
+"Description: Loading mod configs\n" +
+"\n" +
+"java.nio.file.AccessDeniedException: ./config/ninelives-common.toml\n" +
+"\tat java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:89)\n\tat java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)\n" +
+"\tat java.base/sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:243)\n\tat java.base/java.nio.file.Files.newByteChannel(Files.java:380)\n" +
+"\tat java.base/java.nio.file.Files.write(Files.java:3403)\n\tat com.ninelives.config.ConfigWriter.save(ConfigWriter.java:74)\n" +
+"\tat com.ninelives.core.NineLivesMod.onConfigReload(NineLivesMod.java:59)\n" +
+"\tat net.minecraftforge.fml.ModLoader.dispatchParallelEvent(ModLoader.java:539)",
+    opts: ["ninelives 的 toml 写入代码有 bug，把配置文件写坏了", "配置文件或 config 目录是只读的，操作系统直接拒绝了写入", "Java 不支持这种相对路径写法", "磁盘出现坏道"],
+    ok: 1,
+    why: "<b>【这题是公平的】</b><code>AccessDeniedException</code> 不是模组的判断，而是<b>操作系统的裁决</b>：权限/只读属性挡住了写入，栈里连 <code>WindowsFileSystemProvider</code> 都列出来了，说明是在打开文件通道的那一步被拒的，而不是内容格式出错。修法是去掉只读属性、换可写目录、或者把游戏从受保护路径挪出来。这一题公平，是因为<b>日志给出了异常类型、路径和拒绝发生的精确位置</b>，没有任何需要靠猜的第三方因素。"
+  }
+];
+
+/* --------------------------- 引擎 --------------------------- */
+var idx = 0, score = 0, answered = false;
+
+document.getElementById("qTot").textContent = CASES.length;
+
+function diffLabel(d) {
+  return d === "easy" ? "🟢 简单" : d === "medium" ? "🟡 中等" : "🔴 困难";
+}
+
+function render() {
+  var c = CASES[idx];
+  answered = false;
+  document.getElementById("qIdx").textContent = idx + 1;
+  document.getElementById("caseTag").textContent = c.tag;
+  document.getElementById("caseHint").textContent = c.hint;
+  document.getElementById("caseDesc").textContent = c.desc;
+  document.getElementById("caseLog").textContent = c.log;
+  document.getElementById("diffBadge").textContent = diffLabel(c.diff);
+  document.getElementById("diffBadge").className = "badge " +
+    (c.diff === "easy" ? "ok" : c.diff === "medium" ? "warn" : "bad");
+
+  var box = document.getElementById("opts");
+  box.innerHTML = "";
+  var keys = ["A", "B", "C", "D"];
+  c.opts.forEach(function (text, i) {
+    var b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = '<span class="k">' + keys[i] + '</span><span>' + text + "</span>";
+    b.onclick = function () { answer(i); };
+    box.appendChild(b);
+  });
+
+  document.getElementById("why").className = "why hidden";
+  document.getElementById("why").innerHTML = "";
+  document.getElementById("nextBtn").className = "btn hidden";
+  document.getElementById("nextBtn").textContent =
+    (idx === CASES.length - 1) ? "查看被骗报告 →" : "下一题 →";
+  document.getElementById("againBtn").className = "btn ghost sm hidden";
+
+  document.getElementById("progBar").style.width = Math.round((idx / CASES.length) * 100) + "%";
+}
+
+function answer(pick) {
+  if (answered) return;
+  answered = true;
+  var c = CASES[idx];
+  var right = (pick === c.ok);
+
+  if (right) {
+    score++;
+    AH.beep("ok");
+    AH.toast(c.fair ? "读栈成功" : "识破了陷阱 😏");
+  } else {
+    AH.beep("bad");
+    AH.toast("被耍了 🎭", true);
+    AH.shake(true);
+    setTimeout(function () { AH.shake(false); }, 260);
+  }
+
+  document.querySelectorAll("#opts .opt").forEach(function (b, i) {
+    b.disabled = true;
+    if (i === c.ok) b.classList.add("ok");
+    else if (i === pick) b.classList.add("bad");
+  });
+  document.getElementById("score").textContent = score;
+
+  var keys = ["A", "B", "C", "D"];
+  var w = document.getElementById("why");
+  w.className = "why";
+  w.innerHTML = "<b>" + (right ? "✅ 这一局你没被耍。" : "❌ 答案是 " + keys[c.ok] + "。") +
+                "</b><br>" + c.why;
+  document.getElementById("nextBtn").className = "btn";
+  document.getElementById("againBtn").className = "btn ghost sm";
+  if (right) AH.spawn(4);
+}
+
+function next() {
+  if (idx < CASES.length - 1) { idx++; render(); }
+  else finish();
+}
+
+function finish() {
+  document.getElementById("stage").className = "card hidden";
+  document.getElementById("finalCard").className = "card";
+  var pct = score / CASES.length;
+  var v, n;
+  if (pct === 1) {
+    v = "🤝 公平和陷阱都能应付";
+    n = "全对。该读栈的时候读栈，该怀疑栈的时候怀疑栈，这种人很稀有。";
+  } else if (pct >= 0.7) {
+    v = "🃏 半信半疑的高手";
+    n = "你被耍了一两次，但每次都知道自己是被哪一种套路耍的。";
+  } else if (pct >= 0.4) {
+    v = "🎭 你在两种思维之间反复横跳";
+    n = "有时太信日志，有时又疑神疑鬼。这个分数最像真实世界的排查过程。";
+  } else if (pct > 0) {
+    v = "😵 分不清什么时候该怀疑栈";
+    n = "你大概一看到模组名就下结论，或者一看到 OOM 就想加内存。";
+  } else {
+    v = "🫠 两种套路都没学会";
+    n = "全错。公平题你疑神疑鬼，陷阱题你深信不疑——正好全反。";
+  }
+  document.getElementById("verdict").textContent = v;
+  document.getElementById("finalScore").innerHTML = "得分 <b>" + score + "</b> / " + CASES.length;
+  document.getElementById("finalNote").textContent = n;
+  document.getElementById("progBar").style.width = "100%";
+  if (pct >= 0.7) { AH.spawn(16); AH.beep("ok"); }
+}
+
+function restart() {
+  idx = 0; score = 0;
+  document.getElementById("score").textContent = "0";
+  document.getElementById("stage").className = "card";
+  document.getElementById("finalCard").className = "card hidden";
+  render();
+}
+
+document.getElementById("nextBtn").onclick = next;
+document.getElementById("againBtn").onclick = restart;
+document.getElementById("restartBtn").onclick = restart;
+document.getElementById("partyBtn").onclick = function () {
+  AH.spawn(26); AH.beep(); AH.toast("🎉 去耍下一个朋友吧");
+};
+
+render();
+</script>
+</body>
+</html>

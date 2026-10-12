@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>假 MC 控制台 · Anti-Human Tests</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="ahnav" id="ahNav"></nav>
+
+<div class="wrap wide">
+
+  <div class="warnline">⚠️ 仅供娱乐，请勿用于伪造真实崩溃日志 / 现实生活。</div>
+
+  <div class="card">
+    <h2 class="title-glitch" data-t="假 MC 控制台">假 MC 控制台</h2>
+    <p class="muted small">一个会「回应」你打字内容的假服务器终端。它不会真的开服，也不会真的崩——但它很会演。</p>
+  </div>
+
+  <div class="grid auto">
+    <div class="card center">
+      <div class="small muted">在线玩家</div>
+      <div id="statPlayers" class="badge ok">0 / 20</div>
+    </div>
+    <div class="card center">
+      <div class="small muted">TPS</div>
+      <div id="statTps" class="badge ok">20.00</div>
+    </div>
+    <div class="card center">
+      <div class="small muted">内存占用</div>
+      <div id="statMem" class="badge warn">512 MB</div>
+    </div>
+    <div class="card center">
+      <div class="small muted">实体数量</div>
+      <div id="statEnt" class="badge">1024</div>
+    </div>
+  </div>
+
+  <div class="con">
+    <div class="con-bar">
+      <span class="dot" style="background:#ff5f56"></span>
+      <span class="dot" style="background:#ffbd2e"></span>
+      <span class="dot" style="background:#27c93f"></span>
+      <span class="small muted" style="margin-left:8px">Anti-Human Tests — Minecraft Console</span>
+      <span class="badge ok" id="connBadge" style="margin-left:auto">连接状态：CONNECTED</span>
+    </div>
+    <div class="con-body" id="conBody"></div>
+    <div class="con-in">
+      <span>$</span>
+      <input type="text" id="conInput" placeholder="输入指令... 试试 help" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+
+  <div class="btnrow mt12">
+    <button class="btn ghost" id="btnClear">🗑 清屏</button>
+    <button class="btn warn" id="btnLag">🔥 制造延迟尖峰</button>
+    <button class="btn danger" id="btnCrash">💀 崩溃演示</button>
+    <button class="btn" id="btnStopAll">🛑 停止一切动效</button>
+  </div>
+
+  <div class="card mt12">
+    <h3>可用指令</h3>
+    <p class="small muted">
+      help · list · tps · say &lt;msg&gt; · time set day|night · weather clear|rain|thunder ·
+      kill &lt;player&gt; · op &lt;player&gt; · deop &lt;player&gt; · stop · seed · lag · crash
+    </p>
+    <p class="small muted">↑ / ↓ 可以翻历史指令。服务器对你的耐心有限。</p>
+  </div>
+
+</div>
+
+<div class="foot">
+  <p>Anti-Human Tests · 反人类测试系列 · <a href="../index.html">返回首页</a></p>
+  <p class="small">如果有人因为这个项目友尽，作者概不负责。</p>
+</div>
+
+<script src="../assets/chaos.js"></script>
+<script>
+AH.init({ title: "假 MC 控制台", page: "fake-console/" });
+
+(function () {
+  "use strict";
+
+  var bodyEl = document.getElementById("conBody");
+  var inputEl = document.getElementById("conInput");
+  if (!bodyEl || !inputEl) { return; }
+
+  var MAX_LINES = 400;
+  var history = [];
+  var histIdx = -1;
+  var chaos = 0;          // 随时间增长，TPS 随之崩坏
+  var stopCount = 0;
+  var busy = false;
+
+  /* ---------- 工具 ---------- */
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function line(html, cls) {
+    var d = document.createElement("div");
+    d.className = "con-line" + (cls ? " " + cls : "");
+    d.innerHTML = html;
+    bodyEl.appendChild(d);
+    while (bodyEl.childNodes.length > MAX_LINES) {
+      bodyEl.removeChild(bodyEl.firstChild);
+    }
+    bodyEl.scrollTop = bodyEl.scrollHeight;
+    return d;
+  }
+
+  function log(tag, msg) {
+    var cls = "info";
+    if (tag === "WARN") { cls = "warn"; }
+    else if (tag === "ERROR" || tag === "FATAL") { cls = "err"; }
+    else if (tag === "DEBUG") { cls = "dim"; }
+    line('<span class="' + cls + '">[' + tag + ']</span> ' + msg);
+  }
+
+  function info(msg) { log("INFO", msg); }
+  function warn(msg) { log("WARN", msg); }
+  function err(msg) { log("ERROR", msg); }
+
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  function fmtMB(mb) { return (mb / 1024).toFixed(2) + " GB"; }
+
+  /* ---------- 启动序列 ---------- */
+
+  var BOOT = [
+    ["INFO", "Loading properties"],
+    ["INFO", "Default game type: SURVIVAL"],
+    ["INFO", "Generating keypair"],
+    ["INFO", "Starting minecraft server version 1.20.4"],
+    ["WARN", "Server is running in offline mode. Nobody here can prove who they are."],
+    ["INFO", "This server is running Anti-Human Tests build 0.0.1-fake (unpaid internship edition)"],
+    ["INFO", "Preparing level &quot;world&quot;"],
+    ["INFO", "Preparing start region for dimension minecraft:overworld"],
+    ["WARN", "Can't keep up! Is the server overloaded? (yes. it is. and it always will be)"],
+    ["INFO", "Time elapsed: 421 ms"],
+    ["INFO", "Done (3.421s)! For help, type &quot;help&quot;"]
+  ];
+
+  async function boot() {
+    line('<span class="dim">Copyright (c) 1998-2099 Somebody. All rights reserved except the ones you want.</span>');
+    for (var i = 0; i < BOOT.length; i++) {
+      log(BOOT[i][0], BOOT[i][1]);
+      await sleep(120 + Math.random() * 220);
+    }
+    line('<span class="dim">提示：这只是一个假的终端，打什么都不用负责。</span>');
+  }
+
+  /* ---------- 状态数值漂移 ---------- */
+
+  var statPlayers = document.getElementById("statPlayers");
+  var statTps = document.getElementById("statTps");
+  var statMem = document.getElementById("statMem");
+  var statEnt = document.getElementById("statEnt");
+  var connBadge = document.getElementById("connBadge");
+  var memory = 512;
+  var entities = 1024;
+  var online = 3;
+
+  function tpsNow() {
+    return Math.max(2.41, 20 - chaos * 0.37 - Math.random() * 1.2);
+  }
+
+  function tpsBadge(v) {
+    if (v >= 18) { return "badge ok"; }
+    if (v >= 12) { return "badge warn"; }
+    return "badge bad";
+  }
+
+  function refreshStats() {
+    var tps = tpsNow();
+    chaos += Math.random() * 0.55;
+    memory = Math.min(16384, memory + Math.random() * 180);
+    entities = Math.max(120, Math.round(entities + (Math.random() - 0.45) * 260));
+    online = Math.max(0, Math.min(20, online + (Math.random() < 0.3 ? 1 : 0) - (Math.random() < 0.25 ? 1 : 0)));
+
+    if (statPlayers) { statPlayers.textContent = online + " / 20"; }
+    if (statTps) {
+      statTps.textContent = tps.toFixed(2);
+      statTps.className = tpsBadge(tps);
+    }
+    if (statMem) {
+      statMem.textContent = fmtMB(memory);
+      statMem.className = memory > 4096 ? "badge bad" : (memory > 2048 ? "badge warn" : "badge ok");
+    }
+    if (statEnt) { statEnt.textContent = String(entities); }
+    if (connBadge && chaos > 12 && Math.random() < 0.1) {
+      connBadge.textContent = "连接状态：STUTTERING";
+      connBadge.className = "badge warn";
+    }
+  }
+
+  setInterval(refreshStats, 1500);
+  refreshStats();
+
+  /* ---------- 玩家名单 ---------- */
+
+  var PLAYERS = [
+    "Notch", "Herobrine", "Player_404", "xX_Creeper_Xx", "someone_who_left",
+    "Steve_AFK", "Dinnerbone", "AaA_Glitch_Entity", "i_only_play_at_3am", "Griefer_McGee"
+  ];
+
+  function pickPlayer() {
+    return PLAYERS[Math.floor(Math.random() * PLAYERS.length)];
+  }
+
+  /* ---------- 指令实现 ---------- */
+
+  async function cmdLag() {
+    warn("Can't keep up! Did the system time change, or is the server overloaded?");
+    await sleep(320);
+    err("java.lang.Thread.sleep interrupted by reality");
+    line('    <span class="dim">at</span> net.minecraft.server.dedicated.SomeonePretendsToCare.run(<span class="warn">SomeonePretendsToCare.java:404</span>)');
+    line('    <span class="dim">at</span> net.minecraft.server.MinecraftServer.tick(<span class="warn">MinecraftServer.java:1998</span>)');
+    line('    <span class="dim">at</span> your.patience.Thread.hold(<span class="err">Patience.java:0</span>)');
+    await sleep(260);
+    line('<span class="warn">[Server thread/WARN]</span> Skipping 47 ticks. Nobody noticed. The cows are fine.');
+    line('<span class="chaos">[Server thread/WARN]</span> This lag spike was handcrafted. Enjoy responsibly.');
+  }
+
+  function doCrashReal() {
+    alert("⚠️ 光敏性癫痫患者绝对不要点！\n\n出事了作者概不负责。");
+    AH.beep("bad");
+    AH.shake(true);
+    AH.overlay(true);
+    AH.spawn(18, AH.MEMES);
+
+    line('<span class="chaos">*** FATAL: server thread has left the building ***</span>');
+    err("java.lang.OutOfMemoryError: Java heap space (and emotional space)");
+    line('    <span class="dim">at</span> net.minecraft.world.level.chunk.LevelChunk.recalculate(<span class="warn">LevelChunk.java:812</span>)');
+    line('    <span class="dim">at</span> net.minecraft.server.MinecraftServer.tickServer(<span class="warn">MinecraftServer.java:1616</span>)');
+    line('    <span class="dim">at</span> java.base/java.lang.Thread.run(<span class="dim">Thread.java:840</span>)');
+    line('<span class="err">A fatal error has been detected by the Java Runtime Environment.</span>');
+    line('<span class="dim">#  Problematic frame: someone typed "crash" and it worked</span>');
+
+    if (connBadge) {
+      connBadge.textContent = "连接状态：SUSPENDED";
+      connBadge.className = "badge bad";
+    }
+
+    setTimeout(function () {
+      AH.shake(false);
+      AH.overlay(false);
+      line('<span class="ok">[Server thread/INFO]</span> ...ok, that was a bit much. Server survived. It always does.');
+      line('<span class="dim">提示：假崩溃到此结束，你的存档完好无损（本来也不存在）。</span>');
+      if (connBadge) {
+        connBadge.textContent = "连接状态：CONNECTED";
+        connBadge.className = "badge ok";
+      }
+    }, 1600);
+  }
+
+  /* 伪装护栏：正经模式下「崩溃演示」只是普通演示 */
+  var doCrash = AH.guard(function () {
+    AH.beep();
+    line('<span class="info">[Server thread/INFO]</span> This is a <b>demonstration</b> of what a crash log looks like. The real thing needs a mod to misbehave.');
+    line('    <span class="dim">at</span> com.example.mod.ExampleMod.onTick(<span class="warn">ExampleMod.java:42</span>)');
+    line('<span class="dim">#  Problematic frame: (demo) nothing actually crashed</span>');
+    AH.toast("这是演示模式。想要真正的崩溃，得先找到彩蛋。");
+  }, doCrashReal);
+
+  function levenshtein(a, b) {
+    var m = a.length, n = b.length, i, j, prev = [], cur = [];
+    for (j = 0; j <= n; j++) { prev[j] = j; }
+    for (i = 1; i <= m; i++) {
+      cur[0] = i;
+      for (j = 1; j <= n; j++) {
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      }
+      prev = cur.slice();
+    }
+    return prev[n];
+  }
+
+  var KNOWN = ["help", "list", "tps", "say", "time", "weather", "kill", "op", "deop", "stop", "seed", "lag", "crash", "clear"];
+
+  function unknown(cmd) {
+    err('Unknown or incomplete command, see below for error');
+    line('<span class="dim">&gt;</span> ' + esc(cmd));
+    var squiggle = "";
+    for (var i = 0; i < Math.max(1, cmd.length); i++) { squiggle += "~"; }
+    line('<span class="err">' + squiggle + '</span><span class="err">&lt;--[HERE]</span>');
+
+    var best = null, bestD = 99;
+    for (var k = 0; k < KNOWN.length; k++) {
+      var d = levenshtein(cmd.toLowerCase(), KNOWN[k]);
+      if (d < bestD) { bestD = d; best = KNOWN[k]; }
+    }
+    if (best && bestD <= 3) {
+      line('<span class="info">Did you mean:</span> <span class="ok">' + best + '</span><span class="dim">? Probably. Or not. Who can say.</span>');
+    } else {
+      line('<span class="warn">That command does not exist, and neither does the confidence with which you typed it.</span>');
+    }
+    line('<span class="dim">Type "help" for the full list. Type nothing for inner peace.</span>');
+  }
+
+  /* ---------- 指令路由 ---------- */
+
+  async function run(raw) {
+    var text = String(raw || "").trim();
+    if (!text) { return; }
+
+    line('<span class="dim">$</span> ' + esc(text));
+
+    var parts = text.split(/\s+/);
+    var cmd = parts[0].toLowerCase();
+    var args = parts.slice(1);
+    var joined = args.join(" ");
+    if (cmd === "clear") { bodyEl.innerHTML = ""; info("Console cleared."); return; }
+    if (busy && cmd !== "crash") { warn("Server is already busy ignoring you. Please wait."); }
+
+    switch (cmd) {
+      case "help":
+        line('<span class="info">--- Anti-Human Tests fake server commands ---</span>');
+        line('  <span class="ok">help</span>                     <span class="dim">this list, which you will not read</span>');
+        line('  <span class="ok">list</span>                     <span class="dim">who is "online"</span>');
+        line('  <span class="ok">tps</span>                      <span class="dim">ticks per second, currently a suggestion</span>');
+        line('  <span class="ok">say &lt;msg&gt;</span>                <span class="dim">broadcast into the void</span>');
+        line('  <span class="ok">time set day|night</span>       <span class="dim">change the time, change nothing</span>');
+        line('  <span class="ok">weather clear|rain|thunder</span> <span class="dim">and it will rain anyway</span>');
+        line('  <span class="ok">kill &lt;player&gt;</span>            <span class="dim">dramatic, harmless</span>');
+        line('  <span class="ok">op &lt;player&gt;</span> / <span class="ok">deop &lt;player&gt;</span> <span class="dim">power is a loan</span>');
+        line('  <span class="ok">stop</span>                     <span class="dim">attempts a shutdown. attempts.</span>');
+        line('  <span class="ok">seed</span>                     <span class="dim">a number that explains everything</span>');
+        line('  <span class="ok">lag</span>                      <span class="dim">an artisanal lag spike</span>');
+        line('  <span class="ok">crash</span>                    <span class="dim">' + (AH.disguised ? "demo mode - shows what one looks like" : "the fun one (alert first, relax)") + '</span>');
+        return;
+
+      case "list": {
+        var n = 1 + Math.floor(Math.random() * Math.min(6, PLAYERS.length));
+        var shown = PLAYERS.slice().sort(function () { return Math.random() - 0.5; }).slice(0, n);
+        info("There are " + n + " of a max of 20 players online: <span class=\"ok\">" + shown.map(esc).join(", ") + "</span>");
+        if (shown.indexOf("Herobrine") >= 0) {
+          warn("Herobrine joined the game. We did not invite him. Nobody ever does.");
+        }
+        if (shown.indexOf("someone_who_left") >= 0) {
+          line('<span class="dim">someone_who_left left the game</span>');
+        }
+        return;
+      }
+
+      case "tps": {
+        var t = tpsNow();
+        var t5 = Math.max(2.1, t - Math.random() * 1.4);
+        var t15 = Math.max(1.9, t5 - Math.random() * 1.6);
+        var cls = t >= 18 ? "ok" : (t >= 12 ? "warn" : "err");
+        info("TPS from last 1m, 5m, 15m: <span class=\"" + cls + "\">" + t.toFixed(2) + ", " + t5.toFixed(2) + ", " + t15.toFixed(2) + "</span>");
+        if (t >= 18) { line('<span class="dim">Everything is fine. Suspiciously fine.</span>'); }
+        else if (t >= 12) { line('<span class="warn">The server is thinking about it. Give it a minute. Or an hour.</span>'); }
+        else { line('<span class="err">This is not a TPS anymore. This is a cry for help.</span>'); }
+        return;
+      }
+
+      case "say": {
+        if (!joined) { err("Usage: say <message>"); return; }
+        line('<span class="dim">[Server]</span> ' + esc(joined));
+        var low = joined.toLowerCase();
+        if (low.indexOf("lag") >= 0 || low.indexOf("卡") >= 0) {
+          warn("You said the L-word. Everybody heard you. Now look what happens.");
+        } else if (low.indexOf("hello") >= 0 || low.indexOf("hi") >= 0) {
+          line('<span class="dim">[Server]</span> ...silence. Six players saw it. None responded.');
+        } else if (low.indexOf("crash") >= 0) {
+          line('<span class="chaos">[Server]</span> Please do not say that word near the console.');
+        }
+        return;
+      }
+
+      case "time": {
+        if (args[0] !== "set" || (args[1] !== "day" && args[1] !== "night")) {
+          err("Unknown or incomplete command, see below for error");
+          line('<span class="dim">&gt;</span> ' + esc(text));
+          line('<span class="err">~~~~&lt;--[HERE]</span>');
+          line('<span class="dim">Usage: time set day|night</span>');
+          return;
+        }
+        info("Set the time to " + args[1]);
+        await sleep(220);
+        if (args[1] === "day") {
+          line('<span class="warn">[Server]</span> You set it to day. A creeper is now standing behind you.');
+        } else {
+          line('<span class="warn">[Server]</span> You set it to night. Excellent decision-making. Truly.');
+          line('<span class="dim">[Server]</span> Phantoms have been notified.');
+        }
+        return;
+      }
+
+      case "weather": {
+        var kind = (args[0] || "").toLowerCase();
+        if (["clear", "rain", "thunder"].indexOf(kind) < 0) {
+          err("Usage: weather clear|rain|thunder");
+          line('<span class="dim">Whatever you type, it will rain.</span>');
+          return;
+        }
+        info("Set the weather to " + kind);
+        await sleep(200);
+        if (kind !== "rain") {
+          line('<span class="warn">[Server]</span> Weather set to ' + esc(kind) + '. It is now raining. It was always going to rain.');
+        } else {
+          line('<span class="warn">[Server]</span> It is raining. This changes nothing and never has.');
+        }
+        return;
+      }
+
+      case "kill": {
+        var victim = args[0] ? args[0] : pickPlayer();
+        if (!args[0]) {
+          line('<span class="dim">[Server]</span> No target given. Rolling a die instead...');
+          await sleep(300);
+        }
+        line('<span class="err">' + esc(victim) + ' was slain by the console</span>');
+        await sleep(260);
+        line('<span class="dim">' + esc(victim) + ' left the game (they were not consulted)</span>');
+        line('<span class="warn">[Server]</span> They respawned instantly. Death in this game is a mild inconvenience and a strong opinion.');
+        return;
+      }
+
+      case "op": {
+        if (!args[0]) { err("Usage: op <player>"); return; }
+        info("Made " + esc(args[0]) + " a server operator");
+        await sleep(240);
+        line('<span class="warn">[Server]</span> With great power comes a command block, and with a command block comes regret.');
+        line('<span class="dim">[Server]</span> You have 6 minutes before they fill the world with TNT. Use them wisely.');
+        return;
+      }
+
+      case "deop": {
+        if (!args[0]) { err("Usage: deop <player>"); return; }
+        info("Removed operator status from " + esc(args[0]));
+        await sleep(200);
+        line('<span class="chaos">[Server]</span> Power removed. They are already typing "/op me" in another window.');
+        line('<span class="dim">[Server]</span> Trust is a renewable resource, unlike server RAM.');
+        return;
+      }
+
+      case "stop": {
+        stopCount++;
+        if (stopCount < 3) {
+          info("Stopping the server");
+          await sleep(500);
+          warn("Stopping server...");
+          await sleep(450);
+          line('<span class="err">[Server]</span> Server politely declined to stop. Reason: "no".');
+          line('<span class="dim">[Server]</span> Attempt ' + stopCount + ' of 3. Type "stop" again, if you truly mean it.');
+          return;
+        }
+        info("Stopping the server");
+        await sleep(400);
+        line('<span class="warn">[Server]</span> Saving worlds...');
+        await sleep(400);
+        line('<span class="warn">[Server]</span> Saving players...');
+        await sleep(400);
+        line('<span class="err">[Server]</span> You cannot stop what was never really running.');
+        line('<span class="ok">[Server]</span> But fine. Consider it stopped. (It is not stopped. Try a different page.)');
+        stopCount = 0;
+        if (connBadge) {
+          connBadge.textContent = "连接状态：CONNECTED";
+          connBadge.className = "badge ok";
+        }
+        return;
+      }
+
+      case "seed": {
+        var seed = String(Math.floor(Math.random() * 90071992547409) * (Math.random() < 0.5 ? -1 : 1));
+        info("Seed: <span class=\"ok\">[" + seed + "]</span>");
+        line('<span class="dim">[Server]</span> This number explains your entire world. It explains nothing about your life.');
+        line('<span class="dim">[Server]</span> Write it down. Or don\'t. Same outcome.');
+        return;
+      }
+
+      case "lag":
+        await cmdLag();
+        return;
+
+      case "crash":
+        doCrash();
+        return;
+
+      default:
+        unknown(cmd);
+        return;
+    }
+  }
+
+  /* ---------- 输入处理 ---------- */
+
+  function submit() {
+    var v = inputEl.value;
+    if (!v.trim()) { inputEl.value = ""; return; }
+    history.push(v);
+    if (history.length > 80) { history.shift(); }
+    histIdx = history.length;
+    inputEl.value = "";
+    run(v).catch(function (e) {
+      err("Internal script error: " + esc(e && e.message ? e.message : e));
+    });
+  }
+
+  inputEl.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      submit();
+      AH.beep("");
+      return;
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!history.length) { return; }
+      histIdx = Math.max(0, histIdx - 1);
+      inputEl.value = history[histIdx] || "";
+      return;
+    }
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (!history.length) { return; }
+      histIdx = Math.min(history.length, histIdx + 1);
+      inputEl.value = history[histIdx] || "";
+    }
+  });
+
+  /* ---------- 按钮 ---------- */
+
+  var btnClear = document.getElementById("btnClear");
+  var btnLag = document.getElementById("btnLag");
+  var btnCrash = document.getElementById("btnCrash");
+  var btnStopAll = document.getElementById("btnStopAll");
+
+  if (btnClear) {
+    btnClear.addEventListener("click", function () {
+      bodyEl.innerHTML = "";
+      info("Console cleared. The past is gone, the TPS is not.");
+      AH.beep("ok");
+    });
+  }
+
+  if (btnLag) {
+    btnLag.addEventListener("click", function () {
+      AH.beep("bad");
+      AH.toast("已人为制造延迟尖峰 ☠", true);
+      cmdLag();
+    });
+  }
+
+  if (btnCrash) {
+    btnCrash.addEventListener("click", function () {
+      doCrash();
+    });
+  }
+
+  if (btnStopAll) {
+    btnStopAll.addEventListener("click", function () {
+      AH.stopAll();
+      info("All visual effects halted. The chaos has been asked to leave.");
+      AH.toast("动效已全部停止", false);
+    });
+  }
+
+  /* ---------- 启动 ---------- */
+
+  boot().then(function () {
+    inputEl.focus();
+  });
+})();
+</script>
+</body>
+</html>

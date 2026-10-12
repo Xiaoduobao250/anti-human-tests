@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>假下载页面 [混沌] · Anti-Human Tests</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="ahnav" id="ahNav"></nav>
+
+<div class="wrap">
+
+  <div class="warnline">⚠️ 仅供娱乐。本页所有下载、按钮与广告都是假的，不会往你的电脑里安装任何东西。</div>
+
+  <div class="card danger">
+    <h2 class="title-glitch" data-t="假下载页面">假下载页面</h2>
+    <p class="muted small">模仿 2009 年那些「不下载就亏了」的网站。所有按钮都是假的，所有广告都是编的，所有套路都值得被嘲笑。</p>
+  </div>
+
+  <div class="warnline danger">⚠️ 本页是纯喜剧演示，不会真的下载任何文件；现实中请勿模仿这些诱导手段。</div>
+
+  <div class="card">
+    <h3>下载设置</h3>
+    <div class="row">
+      <div class="field">
+        <label for="dlName">文件名</label>
+        <input type="text" id="dlName" value="超级无敌必备工具_v9_final_真的最终版.exe" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="dlSize">文件大小</label>
+        <select id="dlSize">
+          <option value="1">1.44 MB（软盘版）</option>
+          <option value="2" selected>3.7 MB（诚实版）</option>
+          <option value="3">18.6 MB（附赠工具栏版）</option>
+          <option value="4">512 KB（其实是快捷方式）</option>
+        </select>
+      </div>
+    </div>
+    <div class="btnrow">
+      <button class="btn chaos" id="btnStart">⬇️ 立即下载</button>
+      <button class="btn ghost" id="btnReset">↺ 重置</button>
+    </div>
+  </div>
+
+  <div class="card mb12">
+    <div class="dl-bar"><div class="dl-fill" id="dlFill" style="width:0%"></div></div>
+    <div class="dl-meta">
+      <span>已下载：<b id="mDone">0 B</b></span>
+      <span>总大小：<b id="mTotal">0 B</b></span>
+      <span>速度：<b id="mSpeed">0 B/s</b></span>
+      <span>剩余时间：<b id="mEta">--:--</b></span>
+      <span>连接数：<b id="mConns">0</b></span>
+    </div>
+    <p class="small muted mt12" id="dlStatus">等待你按下那个按钮。它已经等了很久了。</p>
+  </div>
+
+  <div class="grid two">
+    <div class="card">
+      <h3>高速下载通道</h3>
+      <div class="btnrow">
+        <button class="btn warn" data-trap="installer">🚀 高速下载（需先安装 3 个下载器）</button>
+        <button class="btn warn" data-trap="vip">💎 会员极速通道</button>
+        <button class="btn warn" data-trap="qr">📱 扫码下载</button>
+        <button class="btn danger" data-trap="av">🔒 安全下载（需关闭杀毒软件）</button>
+      </div>
+      <p class="small muted mt12">每个按钮点下去都会告诉你为什么不该点。认真看，这是本页唯一的真话。</p>
+    </div>
+
+    <div class="card">
+      <h3>今日推荐</h3>
+      <div class="adbox" id="adBox">
+        🎉 恭喜你抽中一等奖！点击领取（需支付 0.01 元邮费）
+      </div>
+      <div class="btnrow">
+        <button class="btn sm" id="btnAd">点我领取</button>
+        <button class="btn sm ghost" id="btnSkip">跳过广告</button>
+      </div>
+      <p class="small muted" id="skipText">广告将在 5 秒后跳过。</p>
+    </div>
+  </div>
+
+  <div class="card mt12">
+    <h3>安全验证</h3>
+    <p class="small muted">请选出所有包含红绿灯的图片（这是个陷阱，我们从没打算让你通过）。</p>
+    <div class="grid three" id="capWrap">
+      <button class="btn ghost" data-i="0">🚗</button>
+      <button class="btn ghost" data-i="1">🦆</button>
+      <button class="btn ghost" data-i="2">🍜</button>
+      <button class="btn ghost" data-i="3">🚦</button>
+      <button class="btn ghost" data-i="4">🐟</button>
+      <button class="btn ghost" data-i="5">🚦</button>
+      <button class="btn ghost" data-i="6">🧦</button>
+      <button class="btn ghost" data-i="7">🚦</button>
+      <button class="btn ghost" data-i="8">🥔</button>
+    </div>
+    <div class="btnrow">
+      <button class="btn" id="btnCap">提交验证</button>
+      <span class="badge" id="capBadge">未验证</span>
+    </div>
+  </div>
+
+  <div class="card danger mt12">
+    <h3>💥 极限操作</h3>
+    <div class="btnrow">
+      <button class="btn chaos" id="btnMax">💥 网速满速</button>
+    </div>
+    <p class="small muted">会闪、会抖、会飞一堆奇怪的东西。仅此而已，没有任何文件会被下载。</p>
+  </div>
+
+  <div class="card mt12">
+    <h3>📄 真实文件</h3>
+    <p class="small muted">下载「完成」之后，你真正拿到的东西：</p>
+    <pre class="term" id="realFile"><span class="dim">（还没下载完，急什么。世界上最好的东西都值得等待，最烂的也是。）</span></pre>
+  </div>
+
+  <div class="card danger mt12">
+    <h2>🕵️ 高速下载站观察指南</h2>
+    <p class="small muted">以下元素在真实的流氓下载站上全部存在，一个不少。本页只是把它们放得离谱了一点。</p>
+    <div class="grid two mt12">
+      <div class="card">
+        <h3>🔥 下载按钮体质鉴定</h3>
+        <p class="small muted">真实下载站的页面上平均有 <b>7.4 个「下载」按钮</b>，其中正确的那个通常长得最像广告。</p>
+        <div class="btnrow">
+          <button class="btn ghost" id="btnWhich1">⬇️ 下载</button>
+          <button class="btn ghost" id="btnWhich2">⬇️ 高速下载</button>
+          <button class="btn" id="btnWhichReal">⬇️ 本地下载_电信</button>
+          <button class="btn ghost" id="btnWhich3">⬇️ 普通下载</button>
+        </div>
+        <p class="small mt12" id="whichOut">点一个试试。反正都不是。</p>
+      </div>
+      <div class="card">
+        <h3>💾 磁盘空间惊魂</h3>
+        <p class="small muted">「您的 C 盘剩余空间不足，请立即清理！」——一个 3.7 MB 的文件需要你先清理 47 GB。</p>
+        <div class="dl-bar"><div class="dl-fill" id="diskFill" style="width:96%"></div></div>
+        <p class="small mt12">C 盘剩余：<b id="diskLeft">2.1 GB</b> / 512 GB（下载 3.7 MB 文件前）</p>
+        <button class="btn sm warn" id="btnDisk">🧹 一键清理</button>
+        <p class="small mt12" id="diskOut"></p>
+      </div>
+    </div>
+    <div class="grid two mt12">
+      <div class="card">
+        <h3>🧰 全家桶捆绑模拟器</h3>
+        <p class="small muted">你只想装一个 3.7 MB 的工具。以下是本次安装将附赠的赠品（已默认全选，取消勾选需要仔细阅读并找到那个 6px 的灰色小字）：</p>
+        <div id="bundle" class="mt12"></div>
+        <div class="btnrow mt12">
+          <button class="btn" id="btnBundleInstall">🚀 一键安装（推荐）</button>
+          <button class="btn ghost sm" id="btnBundleReset">恢复默认勾选</button>
+        </div>
+        <p class="small mt12" id="bundleOut"></p>
+      </div>
+      <div class="card">
+        <h3>📜 用户协议速读版</h3>
+        <p class="small muted">你已经在 4 个下载站点过「我已阅读并同意」。以下是它们的浓缩版：</p>
+        <pre class="term" id="eulaBox" style="max-height:200px;overflow-y:auto;">点击下方按钮生成条款……</pre>
+        <div class="btnrow mt12">
+          <button class="btn sm" id="btnEula">📖 生成条款</button>
+          <button class="btn sm chaos" id="btnAgree">✅ 我已阅读并同意</button>
+        </div>
+        <p class="small mt12" id="eulaOut"></p>
+      </div>
+    </div>
+    <div class="card mt12">
+      <h3>📥 下载按钮蹲守日志</h3>
+      <p class="small muted">本站记录了每一次「下载按钮」的移动轨迹。它没有一次是静止的。</p>
+      <pre class="term" id="shiftLog" style="max-height:150px;overflow-y:auto;">（日志为空。按钮还在装老实。）</pre>
+      <button class="btn sm ghost" id="btnShift">🖱️ 点击「普通下载」</button>
+      <p class="small mt12" id="shiftOut"></p>
+    </div>
+    <div class="card mt12">
+      <h3>🏆 流氓下载站大赏</h3>
+      <p class="small muted">真实存在的经典话术（已脱敏，不点名，它们自己知道是谁）：</p>
+      <pre class="term" id="hallOfShame">点击加载……</pre>
+      <button class="btn sm ghost" id="btnShame">🔄 换一批</button>
+    </div>
+  </div>
+
+  <div class="card danger mt12" id="uninstallCard">
+    <h2>💣 卸载顽固流氓软件 · 终极挑战</h2>
+    <p class="muted small">目标：卸载「全家桶大师 Pro Max 豪华版」。它不想被卸载。它的开发者需要赚钱，为了多赚钱无所不用其极。</p>
+    <div class="dl-bar" style="margin-top:10px"><div class="dl-fill" id="unFill" style="width:0%"></div></div>
+    <div class="dl-meta">
+      <span>卸载进度：<b id="unPct">0%</b></span>
+      <span>它的抵抗力：<b id="unDef">100%</b></span>
+      <span>你的耐心：<b id="unSan">100%</b></span>
+      <span>它赚到的钱：<b id="unCash">¥0.00</b></span>
+    </div>
+    <p class="small mt12" id="unStatus">它正躺在你的电脑里，假装自己是一个系统组件。</p>
+    <div class="btnrow mt12" id="unChoices">
+      <button class="btn danger" id="btnUnStart">💣 开始卸载</button>
+      <button class="btn ghost hidden" id="btnUnRetry">🔁 再试一次（为什么要）</button>
+    </div>
+    <pre class="term mt12 hidden" id="unLog" style="max-height:260px;overflow-y:auto;"></pre>
+  </div>
+
+</div>
+
+<div class="foot">
+  <p>Anti-Human Tests · 反人类测试系列 · <a href="../index-chaos.html">返回首页</a></p>
+  <p class="small">如果有人因为这个项目友尽，作者概不负责。</p>
+</div>
+
+<script>window.AH_MODE="chaos";</script><script src="../assets/chaos.js"></script>
+<script>
+AH.init({ title: "假下载页面", page: "fake-download/" });
+
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  var elFill = $("dlFill"), elDone = $("mDone"), elTotal = $("mTotal"),
+      elSpeed = $("mSpeed"), elEta = $("mEta"), elConns = $("mConns"),
+      elStatus = $("dlStatus"), elReal = $("realFile");
+
+  var timer = null;
+  var quitting = false;   // true 时主动停掉定时器，避免一直空转
+  var targetBytes = 3.7 * 1024 * 1024;
+  var pct = 0;
+  var done = 0;
+  var rollbacks = 0;
+  var stalls = 0;
+  var peak = 0;
+  var maxReached = 0;
+
+  /* ---------- 单位格式化 ---------- */
+
+  function fmtBytes(n) {
+    if (n < 1024) { return Math.max(0, Math.round(n)) + " B"; }
+    if (n < 1024 * 1024) { return (n / 1024).toFixed(1) + " KB"; }
+    if (n < 1024 * 1024 * 1024) { return (n / 1024 / 1024).toFixed(2) + " MB"; }
+    return (n / 1024 / 1024 / 1024).toFixed(2) + " GB";
+  }
+
+  function fmtSpeed(bps) {
+    if (bps < 1024) { return Math.max(0, Math.round(bps)) + " B/s"; }
+    if (bps < 1024 * 1024) { return (bps / 1024).toFixed(1) + " KB/s"; }
+    return (bps / 1024 / 1024).toFixed(1) + " MB/s";
+  }
+
+  function fmtEta(sec) {
+    if (!isFinite(sec) || sec < 0) { return "??:??"; }
+    if (sec > 359999) { return "> 99:59:59"; }
+    var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = Math.floor(sec % 60);
+    return (h > 0 ? h + ":" : "") + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+  }
+
+  /* ---------- 速度模型：故意荒谬 ---------- */
+
+  function currentSpeed() {
+    var r = Math.random();
+    if (stalls > 0 && r < 0.45) { return 0; }                       // 卡死
+    if (r < 0.12) { return 6 * 1024 + Math.random() * 6 * 1024; }   // 拨号上网
+    if (r < 0.35) { return 12 * 1024 + Math.random() * 60 * 1024; } // 12 KB/s ~ 72 KB/s
+    if (r < 0.72) { return 500 * 1024 + Math.random() * 4 * 1024 * 1024; }
+    if (r < 0.94) { return 4 * 1024 * 1024 + Math.random() * 16 * 1024 * 1024; }
+    return 20 * 1024 * 1024 + Math.random() * 20 * 1024 * 1024;     // 到 40 MB/s，纯属诈尸
+  }
+
+  function updateUi(speed, note) {
+    if (elFill) { elFill.style.width = Math.max(0, Math.min(100, pct)).toFixed(2) + "%"; }
+    if (elDone) { elDone.textContent = fmtBytes(done); }
+    if (elTotal) { elTotal.textContent = fmtBytes(targetBytes); }
+    if (elSpeed) {
+      elSpeed.textContent = fmtSpeed(speed);
+      elSpeed.className = speed > 8 * 1024 * 1024 ? "err" : (speed < 16 * 1024 ? "warn" : "");
+    }
+    if (elConns) {
+      elConns.textContent = String(Math.max(1, Math.round(1 + Math.random() * (speed > 1024 * 1024 ? 47 : 8))));
+    }
+    if (elEta) {
+      elEta.textContent = speed <= 0 ? "∞" : fmtEta((targetBytes - done) / speed);
+    }
+    if (elStatus && note) { elStatus.textContent = note; }
+  }
+
+  var STALL_QUOTES = [
+    "当前速度：0 B/s — 正在从 1998 年的服务器重试…",
+    "当前速度：0 B/s — 对端服务器去泡茶了。",
+    "当前速度：0 B/s — 正在与三只猫抢带宽，猫赢了。",
+    "当前速度：0 B/s — 连接被一个看不见的插座拔掉了。",
+    "当前速度：0 B/s — 正在等待对方同意「同意」这条协议。"
+  ];
+
+  var ROLLBACK_QUOTES = [
+    "缓存回滚：已收到的数据被判定为「不太行」。",
+    "缓存回滚：硬盘表示这一段它不认识。",
+    "缓存回滚：检测到数据里有 2009 年的灰尘，正在重新下载。",
+    "缓存回滚：刚才那 3% 属于幻觉，已删除。"
+  ];
+
+  function stopTimer() {
+    if (timer) { clearInterval(timer); timer = null; }
+  }
+
+  function start() {
+    stopTimer();
+
+    var sizeSel = $("dlSize");
+    var mult = sizeSel ? parseFloat(sizeSel.value) || 2 : 2;
+    targetBytes = (mult * 1.85) * 1024 * 1024;
+    pct = 0; done = 0; rollbacks = 0; stalls = 0; peak = 0; maxReached = 0;
+    quitting = false;
+
+    var nameEl = $("dlName");
+    var fname = (nameEl && nameEl.value.trim()) || "未命名文件.bin";
+    AH.toast("开始下载：" + fname, false);
+    AH.beep("ok");
+    if (elReal) {
+      elReal.innerHTML = '<span class="dim">（下载中…… 请勿刷新页面，刷了也没用，反正是假的。）</span>';
+    }
+
+    updateUi(0, "正在解析链接… 解析出了一个 1998 年的 IP。");
+
+    timer = setInterval(function () {
+      if (quitting) { stopTimer(); return; }
+
+      var speed = currentSpeed();
+      if (speed > peak) { peak = speed; }
+
+      // 卡死
+      if (speed <= 0) {
+        stalls++;
+        if (elStatus) { elStatus.textContent = STALL_QUOTES[Math.floor(Math.random() * STALL_QUOTES.length)]; }
+        updateUi(0, elStatus ? elStatus.textContent : "");
+        AH.beep("bad");
+        return;
+      }
+
+      stalls = 0;
+      // 1 秒的增量近似；但每 tick 最多推进 9%，否则 40 MB/s 那一秒直接下完，笑点全没了
+      var step = Math.min(9, (speed / targetBytes) * 100);
+      var nextPct = pct + step;
+
+      // 概率性回滚 —— 只在爬过 60% 之后触发，制造「快好了又完蛋」的绝望
+      var wantRollback = pct > 60 && pct < 96 && Math.random() < 0.14 && rollbacks < 6;
+      if (wantRollback) {
+        var loss = 2 + Math.random() * 5;
+        nextPct = Math.max(1, pct - loss);
+        rollbacks++;
+        if (elStatus) { elStatus.textContent = ROLLBACK_QUOTES[Math.floor(Math.random() * ROLLBACK_QUOTES.length)]; }
+        AH.toast("缓存回滚 -" + loss.toFixed(1) + "%", true);
+        AH.beep("bad");
+      }
+
+      // 87% 卡关：第一次必卡
+      if (pct < 87 && nextPct >= 87 && maxReached < 87) {
+        pct = 87;
+        maxReached = 87;
+        if (elStatus) {
+          elStatus.textContent = "当前速度：0 B/s — 正在从 1998 年的服务器重试…（进度卡在 87%，这是行业惯例）";
+        }
+        updateUi(0, elStatus ? elStatus.textContent : "");
+        AH.toast("进度已神秘地停在 87%", true);
+        return;
+      }
+
+      pct = Math.min(99.4, nextPct);
+      if (pct > maxReached) { maxReached = pct; }
+      done = targetBytes * (pct / 100);
+
+      var note;
+      if (pct >= 99) { note = "就差一点点了…… 每次都是这样。"; }
+      else if (pct >= 87) { note = "爬过 87% 了。别高兴太早，回滚正在路上。"; }
+      else if (pct >= 60) { note = "速度还行，但你还记得它随时会翻脸吧？"; }
+      else if (pct >= 25) { note = "正在下载，顺便下载了一点你不知道的东西（开玩笑的）。"; }
+      else { note = "正在建立连接…… 连接了，又断开了，又连接了。"; }
+
+      updateUi(speed, note);
+
+      // 收尾判定 —— 必须过 87%，允许卡一次
+      if (pct >= 99.4 && maxReached >= 99) {
+        finish(fname);
+      }
+    }, 1000);
+  }
+
+  function finish(fname) {
+    quitting = true;
+    stopTimer();
+
+    // 二选一的「结局」，两边都是笑话
+    var zeroByte = Math.random() < 0.5;
+    pct = 100;
+    updateUi(0, "");
+
+    if (zeroByte) {
+      if (elStatus) {
+        elStatus.textContent = "下载完成！✅ 文件大小：0 字节。我们也很惊讶。";
+      }
+      if (elDone) { elDone.textContent = "0 B"; }
+      AH.toast("下载完成，但文件是 0 字节", true);
+    } else {
+      if (elStatus) {
+        elStatus.textContent = "下载完成！真实文件名：README_先读我.txt";
+      }
+      AH.toast("下载完成 —— 但真正的文件是 README_先读我.txt", true);
+    }
+
+    AH.beep("ok");
+    AH.spawn(8, AH.MEMES);
+
+    if (elReal) {
+      elReal.innerHTML =
+        '<span class="ok">======== README_先读我.txt ========</span>\n' +
+        '恭喜你成功"下载"了 <span class="warn">' + escapeHtml(fname) + '</span>。\n' +
+        '实际上你什么都没下载，因为这是一张网页，\n' +
+        '而网页没有权限往你的硬盘里塞东西。\n\n' +
+        '<span class="info">以下是本文件的全部内容：</span>\n' +
+        '1. 关掉这个页面。\n' +
+        '2. 出门走 20 分钟，抬头看一次天空。\n' +
+        '3. 摸摸草。真的草。\n' +
+        '4. 回来之后，不要再点"高速下载"了。\n\n' +
+        '<span class="dim">-- 一个比你更了解你的网页</span>';
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  /* ---------- 陷阱按钮 ---------- */
+
+  var TRAPS = {
+    installer: {
+      t: "🚀 高速下载（需先安装 3 个下载器）",
+      m: "所谓「高速下载」= 先安装三个你从未听说过的下载器，每个都捆绑一个浏览器主页劫持。装完之后，速度依然是 12 KB/s。",
+      s: "高速下载？那三个下载器才是这单生意的正主。"
+    },
+    vip: {
+      t: "💎 会员极速通道",
+      m: "开通会员后速度提升 200%，从 12 KB/s 提升到 36 KB/s。会员费 30 元/月，文件实际大小 3.7 MB——你不如直接去睡一觉。",
+      s: "会员通道已开通？想得美，这按钮是假的。"
+    },
+    qr: {
+      t: "📱 扫码下载",
+      m: "扫完码会打开一个手机页面，上面有另一个二维码，扫那个会回到这一页。恭喜，你完成了一次完美的循环。",
+      s: "二维码是画上去的，扫不出来。别举手机了。"
+    },
+    av: {
+      t: "🔒 安全下载（需关闭杀毒软件）",
+      m: "任何要求你「先关掉杀毒软件再下载」的页面，都值得你把浏览器关掉再顺手举报一下。这是本页最接近真实建议的一句话。",
+      s: "「安全下载」要求你关掉安全软件？这笑话不好笑的。"
+    }
+  };
+
+  var trapBtns = document.querySelectorAll("[data-trap]");
+  Array.prototype.forEach.call(trapBtns, function (btn) {
+    btn.addEventListener("click", function () {
+      var key = btn.getAttribute("data-trap");
+      var tr = TRAPS[key];
+      if (!tr) { return; }
+      AH.beep("bad");
+      AH.toast(tr.s, true);
+      AH.shake(true);
+      setTimeout(function () { AH.shake(false); }, 260);
+
+      if (elStatus) {
+        elStatus.innerHTML = '<span class="err">' + escapeHtml(tr.t) + '</span> <span class="why">→ ' + escapeHtml(tr.m) + '</span>';
+      }
+      // 把说明也写进状态区下方，保证可读
+      var card = btn.closest(".card");
+      if (card) {
+        var old = card.querySelector(".why-note");
+        if (old) { old.parentNode.removeChild(old); }
+        var p = document.createElement("p");
+        p.className = "small why why-note mt12";
+        p.textContent = tr.m;
+        card.appendChild(p);
+      }
+    });
+  });
+
+  /* ---------- 广告 & 倒计时陷阱 ---------- */
+
+  var AD_TEXTS = [
+    "🎉 恭喜你抽中一等奖！点击领取（需支付 0.01 元邮费）",
+    "📢 本地单身用户都在用的清理大师，一键清理出 47 GB 垃圾。",
+    "🩺 你的电脑已被检测出 3 个问题（其实是我们编的）。",
+    "🎁 免费领取 100 GB 云盘空间（需绑定银行卡，且永远只有 5 GB）。"
+  ];
+
+  var adBox = $("adBox");
+  var btnAd = $("btnAd");
+  var btnSkip = $("btnSkip");
+  var skipText = $("skipText");
+  var skipResets = 0;
+  var skipTimer = null;
+
+  var adIdx = 0;
+  setInterval(function () {
+    if (!adBox) { return; }
+    adIdx = (adIdx + 1) % AD_TEXTS.length;
+    adBox.textContent = AD_TEXTS[adIdx];
+  }, 6000);
+
+  if (btnAd) {
+    btnAd.addEventListener("click", function () {
+      AH.beep("bad");
+      AH.toast("「0.01 元邮费」是本世纪最贵的 0.01 元。", true);
+      if (elStatus) {
+        elStatus.innerHTML = '<span class="why">领取流程：支付 0.01 元 → 填写手机号 → 填写地址 → 收到一条短信 → 短信里还有一张二维码 → 回到第一步。</span>';
+      }
+      AH.spawn(4, AH.FLY);
+    });
+  }
+
+  function runSkipCountdown() {
+    var n = 5;
+    if (skipTimer) { clearInterval(skipTimer); }
+    if (skipText) { skipText.textContent = "广告将在 " + n + " 秒后跳过…"; }
+    skipTimer = setInterval(function () {
+      n--;
+      if (n > 0) {
+        if (skipText) { skipText.textContent = "广告将在 " + n + " 秒后跳过…"; }
+        return;
+      }
+      clearInterval(skipTimer);
+      skipTimer = null;
+
+      if (skipResets < 2) {
+        skipResets++;
+        if (skipText) {
+          skipText.textContent = "广告 0 秒后跳过... 啊，又加载了一个广告。（第 " + skipResets + " 次）";
+        }
+        AH.toast("又加载了一个广告（" + skipResets + "/2）", true);
+        AH.beep("bad");
+        if (elStatus) { elStatus.textContent = "你想跳过广告。广告也想跳过你。"; }
+        setTimeout(runSkipCountdown, 1200);
+        return;
+      }
+
+      if (skipText) { skipText.textContent = "好吧，广告跳过了。但代价是你又在这里待了 15 秒。"; }
+      AH.toast("广告终于跳过了", false);
+      AH.beep("ok");
+    }, 1000);
+  }
+
+  if (btnSkip) {
+    btnSkip.addEventListener("click", function () {
+      skipResets = 0;
+      runSkipCountdown();
+    });
+  }
+
+  /* ---------- 验证码 ---------- */
+
+  var capPicked = [];
+  var capTries = 0;
+  var capBadge = $("capBadge");
+  var capTiles = document.querySelectorAll("#capWrap .btn");
+
+  Array.prototype.forEach.call(capTiles, function (tile) {
+    tile.addEventListener("click", function () {
+      var i = parseInt(tile.getAttribute("data-i"), 10);
+      var at = capPicked.indexOf(i);
+      if (at >= 0) {
+        capPicked.splice(at, 1);
+        tile.className = "btn ghost";
+      } else {
+        capPicked.push(i);
+        tile.className = "btn";
+      }
+      AH.beep("");
+    });
+  });
+
+  var btnCap = $("btnCap");
+  if (btnCap) {
+    btnCap.addEventListener("click", function () {
+      capTries++;
+      AH.beep("bad");
+      if (capTries === 1) {
+        if (capBadge) { capBadge.textContent = "验证失败，请重试"; capBadge.className = "badge bad"; }
+        if (elStatus) { elStatus.textContent = "验证失败，请重试。（第 1 次。它只会失败一次，然后突然放行，就像所有真实的验证码一样。）"; }
+        AH.toast("验证失败，请重试", true);
+        return;
+      }
+      var correct = capPicked.length === 3 && capPicked.indexOf(3) >= 0 && capPicked.indexOf(5) >= 0 && capPicked.indexOf(7) >= 0;
+      if (correct || capTries >= 2) {
+        if (capBadge) { capBadge.textContent = "验证通过（莫名其妙地）"; capBadge.className = "badge ok"; }
+        if (elStatus) { elStatus.textContent = correct ? "你居然真的选对了。可这并不会让下载变快。" : "验证通过！我们也不知道为什么，反正服务器心情好。"; }
+        AH.toast("验证通过 —— 然而下载速度不变", false);
+        AH.beep("ok");
+      }
+    });
+  }
+
+  /* ---------- 满速按钮 & 重置 ---------- */
+
+  var btnMax = $("btnMax");
+  if (btnMax) {
+    btnMax.addEventListener("click", AH.guard(function () {
+      /* 伪装态：只是普通演示 */
+      AH.beep();
+      if (elStatus) { elStatus.textContent = "演示模式：满速演示已跳过。本页不会真的下载任何文件。"; }
+      AH.toast("演示模式", false);
+    }, function () {
+      alert("⚠️ 光敏性癫痫患者绝对不要点！\n\n出事了作者概不负责。");
+      AH.beep("bad");
+      AH.spawn(20, AH.MEMES);
+      AH.shake(true);
+      AH.overlay(true);
+      setTimeout(function () {
+        AH.shake(false);
+        AH.overlay(false);
+        if (elStatus) { elStatus.textContent = "「满速」已完成：抖动 0.9 秒，实际速度未变。这就是互联网。"; }
+        AH.toast("满速体验结束，速度毫无变化", true);
+      }, 900);
+    }));
+  }
+
+  var btnReset = $("btnReset");
+  if (btnReset) {
+    btnReset.addEventListener("click", function () {
+      quitting = true;
+      stopTimer();
+      pct = 0; done = 0; rollbacks = 0; stalls = 0;
+      updateUi(0, "已重置。服务器假装什么都没发生过。");
+      if (elDone) { elDone.textContent = "0 B"; }
+      if (elReal) { elReal.innerHTML = '<span class="dim">（还没下载完，急什么。世界上最好的东西都值得等待，最烂的也是。）</span>'; }
+      if (capBadge) { capBadge.textContent = "未验证"; capBadge.className = "badge"; }
+      capPicked = []; capTries = 0;
+      Array.prototype.forEach.call(capTiles, function (t) { t.className = "btn ghost"; });
+      AH.toast("已重置", false);
+      AH.beep("ok");
+    });
+  }
+
+  var btnStart = $("btnStart");
+  if (btnStart) { btnStart.addEventListener("click", start); }
+
+  updateUi(0, "等待你按下那个按钮。它已经等了很久了。");
+
+  /* ================================================================
+     🕵️ 高速下载站观察指南 —— 讽刻真实流氓下载站的互动元素
+     ================================================================ */
+
+  /* ---------- 1. 下载按钮体质鉴定 ---------- */
+  var whichTries = 0;
+  var WHICH_MSGS = [
+    { ok: false, m: "这是「高速下载器」的按钮。它装的不是文件，是一家人的浏览器主页。" },
+    { ok: false, m: "这是会员专享按钮。会员费 30 元/月，提速后约 36 KB/s。" },
+    { ok: true,  m: "居然点对了。但真实网站里，这个按钮的字体通常只有 5px，且颜色和背景几乎一致。" },
+    { ok: false, m: "「普通下载」= 用单线程从 1998 年拉数据。它与「高速」的区别是：高速的会先装下载器。" }
+  ];
+  function wireWhich(id, idx) {
+    var b = $(id);
+    if (!b) return;
+    b.addEventListener("click", function () {
+      var info = WHICH_MSGS[idx];
+      whichTries++;
+      AH.beep(info.ok ? "ok" : "bad");
+      var out = $("whichOut");
+      if (out) {
+        out.innerHTML = (info.ok ? '<span class="ok">✓ </span>' : '<span class="err">✗ </span>') + escapeHtml(info.m);
+      }
+      if (!info.ok) {
+        AH.toast("又中了一个。真实网站里你已经装了 " + whichTries + " 个全家桶。", true);
+        if (whichTries % 2 === 0) { AH.spawn(4, AH.FLY); }
+      } else {
+        AH.toast("找对了！你已被骗 " + (whichTries - 1) + " 次。", false);
+      }
+    });
+  }
+  wireWhich("btnWhich1", 0);
+  wireWhich("btnWhich2", 1);
+  wireWhich("btnWhichReal", 2);
+  wireWhich("btnWhich3", 3);
+
+  /* ---------- 2. 磁盘空间惊魂 ---------- */
+  var diskScams = 0;
+  var btnDisk = $("btnDisk");
+  if (btnDisk) {
+    btnDisk.addEventListener("click", function () {
+      diskScams++;
+      AH.beep("bad");
+      var fill = $("diskFill"), left = $("diskLeft"), out = $("diskOut");
+      // 每次清理后剩余空间反而更少
+      var remain = Math.max(0.02, 2.1 - diskScams * 0.7 - Math.random() * 0.3);
+      if (fill) { fill.style.width = Math.min(99.9, 96 + diskScams * 0.8).toFixed(1) + "%"; }
+      if (left) { left.textContent = remain.toFixed(2) + " GB"; }
+      var lines = [
+        "清理完成！释放了 47 GB 垃圾。剩余空间反而变少了，这在业内称为「负优化」。",
+        "清理完成！本次共卸载 3 个您需要的软件、安装 5 个您不需要的软件。",
+        "清理完成！您的浏览器主页已升级为 cleaner-hao123-2345 三重保障版。",
+        "清理完成！已将 47 GB 垃圾转移到 C 盘更深的地方，下次清理时再释放。"
+      ];
+      if (out) { out.innerHTML = '<span class="err">' + escapeHtml(lines[Math.min(diskScams - 1, lines.length - 1)]) + '</span>'; }
+      AH.toast("清理完成，空间更少了（" + diskScams + " 次清理）", true);
+      AH.shake(true);
+      setTimeout(function () { AH.shake(false); }, 240);
+    });
+  }
+
+  /* ---------- 3. 全家桶捆绑模拟器 ---------- */
+  var BUNDLE = [
+    { n: "某某高速浏览器（将替换您的默认浏览器）", size: "86 MB", force: false },
+    { n: "某某安全卫士（与您已有的杀软冲突）", size: "210 MB", force: false },
+    { n: "某某输入法（含天气预报与热点资讯）", size: "74 MB", force: false },
+    { n: "某某影音（开机自启，无法关闭）", size: "132 MB", force: false },
+    { n: "某某压 缩 软 件（广告版）", size: "28 MB", force: false },
+    { n: "主 页 锁 定 服 务（系统关键组件，不可卸载）", size: "0.3 MB", force: true }
+  ];
+  var bundleBox = $("bundle");
+  var bundleState = [];
+  function renderBundle() {
+    if (!bundleBox) return;
+    var html = "";
+    for (var i = 0; i < BUNDLE.length; i++) {
+      var it = BUNDLE[i];
+      var checked = bundleState[i] !== false; // 默认全选
+      html += '<label style="display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;margin-bottom:6px;' + (it.force ? 'opacity:.55;' : '') + '">'
+        + '<input type="checkbox" data-bd="' + i + '"' + (checked ? " checked" : "") + (it.force ? " disabled" : "") + '>'
+        + '<span class="small">' + it.n + ' <span class="dim">(' + it.size + ')</span>'
+        + (it.force ? ' <span class="badge bad">必选</span>' : '') + '</span></label>';
+    }
+    bundleBox.innerHTML = html;
+    var cbs = bundleBox.querySelectorAll("input[data-bd]");
+    Array.prototype.forEach.call(cbs, function (cb) {
+      cb.addEventListener("change", function () {
+        var i = parseInt(cb.getAttribute("data-bd"), 10);
+        bundleState[i] = cb.checked;
+        AH.beep("");
+      });
+    });
+  }
+  // 初始：全部默认勾选
+  for (var bi = 0; bi < BUNDLE.length; bi++) { bundleState[bi] = true; }
+  renderBundle();
+
+  var btnBundleInstall = $("btnBundleInstall");
+  if (btnBundleInstall) {
+    btnBundleInstall.addEventListener("click", function () {
+      var count = 0, total = 0;
+      for (var i = 0; i < BUNDLE.length; i++) {
+        if (bundleState[i] !== false) {
+          count++;
+          var mm = parseFloat(BUNDLE[i].size);
+          if (!isNaN(mm)) { total += mm; }
+        }
+      }
+      AH.beep("bad");
+      var out = $("bundleOut");
+      var targetMB = 3.7;
+      var ratio = (total / targetMB).toFixed(0);
+      var msg = "安装完成！您要的 " + targetMB + " MB 工具已就位。本次同时为您安装了 " + count + " 位新朋友（共 " + total.toFixed(0) + " MB，是你想下载的东西的 " + ratio + " 倍）。祝它们全家幸福。";
+      if (out) { out.innerHTML = '<span class="err">' + escapeHtml(msg) + '</span>'; }
+      AH.toast("成功安装 " + count + " 个软件（你只想要 1 个）", true);
+      AH.spawn(6, AH.FLY);
+      // 装完后恢复默认勾选（真实网站：下次还是全选）
+      for (var j = 0; j < BUNDLE.length; j++) { bundleState[j] = true; }
+      setTimeout(renderBundle, 400);
+    });
+  }
+  var btnBundleReset = $("btnBundleReset");
+  if (btnBundleReset) {
+    btnBundleReset.addEventListener("click", function () {
+      // 「恢复默认勾选」= 再次全部勾上（这就是那个按钮的真实作用）
+      for (var i = 0; i < BUNDLE.length; i++) { bundleState[i] = true; }
+      renderBundle();
+      AH.beep("bad");
+      AH.toast("已恢复默认勾选（全部勾上）", true);
+      var out = $("bundleOut");
+      if (out) { out.innerHTML = '<span class="dim">这个按钮的名字叫「恢复默认」，而默认就是全部勾上。它没撒谎。</span>'; }
+    });
+  }
+
+  /* ---------- 4. 用户协议速读版 ---------- */
+  var EULA_POOL = [
+    "第 1 条：您同意我们收集您的一切数据，包括但不限于：点击、停留、犹豫、以及您在深夜 3 点下载了什么。",
+    "第 2 条：「高速」是一个形容词，不构成任何速度承诺。参考本院之前判例：12 KB/s 亦属高速。",
+    "第 3 条：您同意我们为您安装「合作伙伴」的软件。合作伙伴名单实时更新，恕不另行通知，也不在本文档内。",
+    "第 4 条：本软件可能包含功能。功能造成的后果由您承担。功能不工作时，参考第 5 条。",
+    "第 5 条：最终解释权归我们所有。如果您不理解某条款，那是因为您没有仔细阅读；如果您仔细阅读了，那您需要出去走走。",
+    "第 6 条：您同意不打官司。打官司的成本约为 30 元会员费的 4 万倍，这是数学，不是威胁。",
+    "第 7 条：勾选「我已阅读」即视为您已阅读。系统不相信您真的读了，但它相信您会勾。"
+  ];
+  var eulaShown = false;
+  var btnEula = $("btnEula");
+  if (btnEula) {
+    btnEula.addEventListener("click", function () {
+      var box = $("eulaBox");
+      if (!box) return;
+      var shuffled = EULA_POOL.slice().sort(function () { return Math.random() - 0.5; });
+      box.textContent = "《用户协议》（摘要版，全文长约 3 小时）：\n\n" + shuffled.join("\n\n");
+      eulaShown = true;
+      AH.beep("");
+      AH.toast("条款已生成。全文 1.8 万字，您将用 0.3 秒同意它。", false);
+    });
+  }
+  var btnAgree = $("btnAgree");
+  if (btnAgree) {
+    btnAgree.addEventListener("click", function () {
+      var out = $("eulaOut");
+      AH.beep("bad");
+      if (!eulaShown && out) {
+        out.innerHTML = '<span class="err">您还没有打开条款就同意了。恭喜，您已经完全掌握了真实互联网的阅读习惯。</span>';
+        AH.toast("0.2 秒同意 1.8 万字，新纪录", true);
+      } else if (out) {
+        out.innerHTML = '<span class="err">同意成功。第 3 条已生效，您的浏览器主页正在路上。</span>';
+        AH.toast("主页已设置为您从未选过的导航站", true);
+        AH.spawn(6, AH.FLY);
+        AH.shake(true);
+        setTimeout(function () { AH.shake(false); }, 240);
+      }
+    });
+  }
+
+  /* ---------- 5. 下载按钮蹲守日志（按钮位置漂移） ---------- */
+  var SHIFT_LOGS = [
+    "[12:00:01] 按钮 A（本地下载_电信）出现在页面第 3 屏。",
+    "[12:00:02] 用户滚动到第 3 屏。按钮 A 移动到第 1 屏。",
+    "[12:00:03] 用户回到第 1 屏。按钮 A 消失，出现按钮 B（高速下载_电信）。",
+    "[12:00:04] 用户点击按钮 B。按钮 B 下移 40px，点中了广告。",
+    "[12:00:05] 用户再次点击按钮 B。按钮 B 变为按钮 C（高速下载_联通）。",
+    "[12:00:06] 用户愤怒关闭页面。日志记录：按钮 A 已在页脚复活。",
+    "[12:00:07] 系统备注：本页共有 9 个下载按钮，0 个能下载。",
+    "[12:00:08] 系统备注：今日已成功诱导安装下载器 1,024 次。按钮们辛苦了。"
+  ];
+  var shiftIdx = 0;
+  var btnShift = $("btnShift");
+  if (btnShift) {
+    btnShift.addEventListener("click", function () {
+      var box = $("shiftLog"), out = $("shiftOut");
+      // 打乱日志池，模拟按钮漂移
+      shiftIdx = (shiftIdx + 3) % SHIFT_LOGS.length;
+      var picked = [];
+      for (var i = 0; i < 4; i++) { picked.push(SHIFT_LOGS[(shiftIdx + i) % SHIFT_LOGS.length]); }
+      if (box) { box.textContent = picked.join("\n"); }
+      if (out) { out.innerHTML = '<span class="err">按钮刚刚移动了。它现在不在这里。它从来不在你点的地方。</span>'; }
+      AH.beep("bad");
+      AH.toast("按钮又动了", true);
+      AH.shake(true);
+      setTimeout(function () { AH.shake(false); }, 200);
+    });
+  }
+
+  /* ---------- 6. 流氓下载站大赏 ---------- */
+  var SHAME_POOL = [
+    "「您的下载速度已达到会员上限。开通会员后可享受更慢的速度。」",
+    "「检测到您未安装 our-download-manager，已为您自动勾选全部推荐软件。」",
+    "「本站文件经过 3 重压缩：zip → rar → 改后缀为 exe。」",
+    "「下载前请先关闭杀毒软件，以免误报。我们不装什么，真的。」",
+    "「温馨提示：点击页面任意位置即视为同意下载。」",
+    "「您是今日第 1,024,588 位访客，已免费获得下载排队资格（当前排位：1,024,587）。」",
+    "「为提高下载速度，本站已将文件分片存放于 47 个不同的广告页。」",
+    "「官方下载（推荐）»»» 官方下载（正式版）»»» 官方下载（终极版）»»» 本地下载（没人点这个）」"
+  ];
+  var shameBox = $("hallOfShame");
+  if (shameBox) {
+    shameBox.textContent = SHAME_POOL.join("\n\n");
+    var btnShame = $("btnShame");
+    if (btnShame) {
+      btnShame.addEventListener("click", function () {
+        var shuffled = SHAME_POOL.slice().sort(function () { return Math.random() - 0.5; });
+        shameBox.textContent = shuffled.join("\n\n");
+        AH.beep("");
+        AH.toast("经典话术已刷新。话术永不重复，套路永远重复。", false);
+      });
+    }
+  }
+
+  /* ================================================================
+     💣 卸载顽固流氓软件 · 终极挑战
+     一场与「为了多赚钱无所不用其极」的卸载程序之间的对话。
+     每一步它都想让你：留下来 / 花钱 / 看广告 / 顺便装点别的。
+     ================================================================ */
+
+  var un = { pct: 0, def: 100, san: 100, cash: 0, running: false };
+
+  var unFill = $("unFill"), unPctEl = $("unPct"), unDefEl = $("unDef"),
+      unSanEl = $("unSan"), unCashEl = $("unCash"), unStatusEl = $("unStatus"),
+      unLogEl = $("unLog"), unChoicesEl = $("unChoices");
+
+  function unLog(lineHtml) {
+    if (!unLogEl) return;
+    unLogEl.className = "term mt12";
+    unLogEl.innerHTML += lineHtml + "\n";
+    unLogEl.scrollTop = unLogEl.scrollHeight;
+  }
+
+  function unRender() {
+    if (unFill) { unFill.style.width = Math.max(0, Math.min(100, un.pct)).toFixed(1) + "%"; }
+    if (unPctEl) { unPctEl.textContent = un.pct.toFixed(0) + "%"; }
+    if (unDefEl) { unDefEl.textContent = Math.max(0, un.def).toFixed(0) + "%"; }
+    if (unSanEl) { unSanEl.textContent = Math.max(0, un.san).toFixed(0) + "%"; }
+    if (unCashEl) { unCashEl.textContent = "¥" + un.cash.toFixed(2); }
+  }
+
+  function unReset() {
+    un.pct = 0; un.def = 100; un.san = 100; un.cash = 0; un.running = false;
+    unRender();
+    if (unLogEl) { unLogEl.innerHTML = ""; unLogEl.className = "term mt12 hidden"; }
+    if (unStatusEl) { unStatusEl.textContent = "它正躺在你的电脑里，假装自己是一个系统组件。"; }
+  }
+
+  /* 每一步的干扰选项：正确答案 + 各种「为它赚钱」的陷阱 */
+  var UN_STEPS = [
+    {
+      q: "双击 uninst.exe。它先弹出一个窗口：「真的要离开我们吗？」",
+      log: "<span class=\"dim\">[启动]</span> uninst.exe 已运行。它用 0.8 秒检查了你是否为会员（不是）。",
+      opts: [
+        { t: "是的，卸载", ok: true },
+        { t: "不卸了，我再想想", ok: false, lose: 18, cash: 0,
+          why: "你退出了。它在后台记了一笔：「该用户心软，可培育为付费用户」。它没有卸载，还给你打了标签。" },
+        { t: "先最小化，等会儿再卸", ok: false, lose: 8, cash: 0,
+          why: "最小化的窗口在后台完成了三件事：开机自启、注册服务、预约了明天的弹窗。" }
+      ]
+    },
+    {
+      q: "它弹出了挽留页：「.fill再想想！您已使用本软件累计 1,460 天（其中 1,459 天它没干过活）」",
+      log: "<span class=\"warn\">[挽留页 1/3]</span> 它展示了你和它的回忆杀。照片里的它正在弹广告。",
+      opts: [
+        { t: "狠心继续卸载", ok: true },
+        { t: "点击「再给我们一次机会」", ok: false, lose: 22, cash: 6,
+          why: "「一次机会」= 它获得了再来一次弹窗的机会。你获得了 6 元优惠券（满 999 可用）。" },
+        { t: "截图发朋友圈吐槽", ok: false, lose: 10, cash: 2,
+          why: "它检测到截图行为，自动为你生成了推广文案并发布。你免费帮它打了广告，它因此赚了 2 元广告分成。" }
+      ]
+    },
+    {
+      q: "挽留页 2：「填写满意度调查，卸载后送 88 元会员！」",
+      log: "<span class=\"warn\">[挽留页 2/3]</span> 调查共 47 题。第 12 题起，所有选项都是「非常满意」。",
+      opts: [
+        { t: "跳过调查，坚持卸载", ok: true },
+        { t: "认真填完 47 题", ok: false, lose: 25, cash: 0,
+          why: "填完后它说「调查已满，奖励已发完」。但你的手机号已被记入「易受骗名单」，明晚开始接收推销电话。" },
+        { t: "填假信息", ok: false, lose: 12, cash: 0,
+          why: "它检测出是假信息，转手把假信息卖给同行（假信息也是数据）。你浪费了 6 分钟，它赚了 0.3 元。" }
+      ]
+    },
+    {
+      q: "挽留页 3：「卸载将导致系统崩溃！您的 12 个软件依赖本组件」",
+      log: "<span class=\"err\">[恐吓]</span> 它列出了 12 个「依赖项」。其中 8 个是它自己装的，3 个不存在，1 个是计算器。",
+      opts: [
+        { t: "识破了，继续卸载", ok: true },
+        { t: "吓到了，取消卸载", ok: false, lose: 30, cash: 0,
+          why: "你取消了。它顺势弹出「系统修复工具（付费版）」，扫描出 4,096 个「风险」，修复需开通年度会员。" },
+        { t: "点击查看依赖详情", ok: false, lose: 15, cash: 3,
+          why: "「详情」是一页广告。你看了 30 秒广告，它赚了 3 元。那 12 个依赖项在详情里变成了 24 个。" }
+      ]
+    },
+    {
+      q: "它退了一步：「可以卸载，但请告诉我们原因」——给了 5 个选项，其中 4 个点不了",
+      log: "<span class=\"dim\">[问卷]</span> 可点的那一项叫「我不想用电脑了」。",
+      opts: [
+        { t: "直接点右上角关闭", ok: true },
+        { t: "选「我不想用电脑了」", ok: false, lose: 16, cash: 0,
+          why: "它回复「电脑还有很多美好等您探索」，然后推荐了它的「电脑入门课程」，首月 9.9 元，自动续费 29.9。" },
+        { t: "认真找能点的选项", ok: false, lose: 9, cash: 1,
+          why: "你点了 4 个灰色按钮，每个都触发了 0.25 元的「交互行为计费」。它管这叫「用户参与度收益」。" }
+      ]
+    },
+    {
+      q: "卸载进度条出现在了，走到 33% 时——「检测到新版本，正在升级，请勿关闭」",
+      log: "<span class=\"err\">[升级]</span> 它在卸载过程中给自己升了级。新版本名称：《全家桶大师 Pro Max 豪华版 2026 至尊纪念版》。",
+      opts: [
+        { t: "等待升级完成（可能有用）", ok: false, lose: 28, cash: 8,
+          why: "升级耗时 8 分钟。升级内容：新增 2 个开机自启项、1 个服务、3 个计划任务。旧版本卸载入口已被移除，它说新版「更简洁」。" },
+        { t: "立即断网，掐断它的升级", ok: true },
+        { t: "强制重启电脑", ok: false, lose: 20, cash: 0,
+          why: "重启后它比你的系统先启动，并贴心地帮你恢复了「中断的升级」。同时把卸载图标从开始菜单移除了。" }
+      ]
+    },
+    {
+      q: "进度 67%。「卸载前的最后福利：花费 1 元，尊享 3 分钟极速卸载通道！」",
+      log: "<span class=\"warn\">[付费加速]</span> 极速通道的带宽是 512 B/s。普通通道是 480 B/s。",
+      opts: [
+        { t: "拒绝付费，继续普通卸载", ok: true },
+        { t: "花 1 元买极速通道", ok: false, lose: 12, cash: 1,
+          why: "你付了 1 元。极速通道的额外 32 B/s 带宽，用在了向你推送「感谢付费」的弹窗上。卸载进度反而 +0%。" },
+        { t: "反手举报这个页面", ok: false, lose: 10, cash: 0,
+          why: "举报按钮是它画的。点击后弹窗：「感谢反馈！已为您转接人工客服（按分钟计费）」。" }
+      ]
+    },
+    {
+      q: "进度 89%。「即将删除以下文件」——列表里有 3,847 个文件",
+      log: "<span class=\"dim\">[文件列表]</span> 其中 3,844 个文件属于你的其他软件。它把整个 Users 目录都算进去了。",
+      opts: [
+        { t: "逐个核对，取消误删项", ok: false, lose: 35, cash: 0,
+          why: "核对到第 800 个时你眼花了，误保留了它自己的 3 个核心文件。卸载失败，它复活了，还发了条朋友圈。" },
+        { t: "全部允许删除（它不敢真删系统）", ok: true },
+        { t: "取消整个卸载保平安", ok: false, lose: 40, cash: 0,
+          why: "你取消了。它把这次「未遂卸载」记录为「用户依赖度+1」，并立即弹窗庆祝：「感谢您的信任！」" }
+      ]
+    },
+    {
+      q: "进度 99%。最后一个窗口：「卸载完成前，帮我们填一份问卷好吗？就 2 题」",
+      log: "<span class=\"warn\">[最终问卷]</span> 第 1 题有 200 个选项。第 2 题的选项随鼠标移动而刷新。",
+      opts: [
+        { t: "拒绝，立即完成卸载", ok: true },
+        { t: "好吧，就 2 题", ok: false, lose: 26, cash: 4,
+          why: "第 2 题你填了 40 分钟。问卷提交后它说「系统繁忙，请稍后再卸载」。它靠你的问卷数据完成了 A 轮融资。" },
+        { t: "把它的窗口拖到屏幕外", ok: false, lose: 14, cash: 0,
+          why: "它检测到窗口离开屏幕，自动移动了回来，并顺便全屏弹出了「您似乎遇到了困难」帮助页（含广告）。" }
+      ]
+    },
+    {
+      q: "进度 100%。它说：「再见。一周后我会回来的。」——然后留下了一个 4 KB 的「卸载残留」",
+      log: "<span class=\"ok\">[结束]</span> 卸载完成。耗时 47 分钟。残留文件 4 KB，服务 1 个，注册表项 217 个。",
+      opts: [
+        { t: "手动清除残留（注册表 + 服务）", ok: true },
+        { t: "算了，4 KB 而已", ok: false, lose: 24, cash: 0,
+          why: "三个月后，那个 4 KB 的残留下载了它全家。你的电脑再次迎来了「全家桶大师 Pro Max 豪华版 2026 至尊纪念版 2」。" },
+        { t: "重启电脑庆祝", ok: false, lose: 8, cash: 0,
+          why: "重启时残留文件抢在系统前启动，把「卸载完成」改写为「卸载中断」。你回到了第 1 步。" }
+      ]
+    }
+  ];
+
+  var unStep = 0;
+
+  function unShowStep() {
+    var step = UN_STEPS[unStep];
+    if (!step) { unFinish(); return; }
+    if (unStatusEl) { unStatusEl.innerHTML = "<b>" + escapeHtml(step.q) + "</b>"; }
+    unChoicesEl.innerHTML = "";
+    var shuffled = step.opts.map(function (o, i) { return { o: o, i: i }; })
+      .sort(function (a, b) { return Math.random() - 0.5; });
+    shuffled.forEach(function (pair) {
+      var b = document.createElement("button");
+      b.className = "btn " + (pair.o.ok ? "" : "warn");
+      b.textContent = pair.o.t;
+      b.addEventListener("click", function () { unChoose(pair.o); });
+      unChoicesEl.appendChild(b);
+    });
+  }
+
+  function unChoose(opt) {
+    var step = UN_STEPS[unStep];
+    if (opt.ok) {
+      un.pct += (100 / UN_STEPS.length) * 1.15;
+      un.san -= 2 + Math.random() * 3;
+      un.def -= 9 + Math.random() * 3;
+      unLog('<span class="ok">✓</span> ' + escapeHtml(opt.t) + ' <span class="dim">— 它又少了一个招。</span>');
+      AH.beep("ok");
+    } else {
+      un.pct = Math.max(0, un.pct - (opt.lose || 10) * 0.4);
+      un.san -= (opt.lose || 10);
+      un.cash += (opt.cash || 0);
+      un.def = Math.min(100, un.def + 4);
+      unLog('<span class="err">✗</span> ' + escapeHtml(opt.t) + '<br><span class="why">' + escapeHtml(opt.why) + '</span>');
+      AH.beep("bad");
+      AH.toast("它又赚了一笔（¥" + (opt.cash || 0).toFixed(2) + "）", true);
+      if (Math.random() < 0.35) { AH.spawn(5, AH.FLY); }
+    }
+    unRender();
+    unStep++;
+    // 耐心耗尽：被它熬走
+    if (un.san <= 0) {
+      unDefeat();
+      return;
+    }
+    if (un.pct >= 100) { unFinish(); return; }
+    setTimeout(unShowStep, 350);
+  }
+
+  function unDefeat() {
+    un.running = false;
+    unChoicesEl.innerHTML = "";
+    if (unStatusEl) {
+      unStatusEl.innerHTML = '<span class="err">💀 你的耐心先耗尽了。它还在，而且比刚才更有钱了（¥' + un.cash.toFixed(2) + '）。</span>';
+    }
+    unLog('<span class="err">[结局：耐心耗尽]</span> 它把你的每一次动摇都换算成了收入。它开发者的孩子多报了一个兴趣班。');
+    unLog('<span class="dim">建议：这不是耐心问题，是需要一个干净的系统镜像。</span>');
+    showRetry();
+    AH.beep("bad");
+    AH.shake(true);
+    setTimeout(function () { AH.shake(false); }, 400);
+    AH.spawn(12, AH.MEMES);
+    /* 它根本没被卸载，弹广告更是理直气壮 */
+    startGhostAds();
+  }
+
+  function unFinish() {
+    un.running = false;
+    un.pct = 100;
+    unRender();
+    unChoicesEl.innerHTML = "";
+    var tag = un.cash > 0
+      ? '但你还是让它赚了 ¥' + un.cash.toFixed(2) + '。它把这个数字裱了起来。'
+      : '你一分钱都没让它赚到。它的开发者盯着 0.00 的后台仪表盘沉默了很久。';
+    if (unStatusEl) {
+      unStatusEl.innerHTML = '<span class="ok">✅ 卸载完成。</span> ' + escapeHtml(tag);
+    }
+    unLog('<span class="ok">[结局：成功]</span> 卸载完成。残留 4 KB，注册表 217 项，以及一个输了的游戏。');
+    unLog('<span class="dim">它临走前在你的桌面留了一个快捷方式。你删了。它泉下有知，会再创建一个的。</span>');
+    showRetry();
+    AH.beep("ok");
+    AH.spawn(16, AH.MEMES);
+    startGhostAds();
+  }
+
+  /* ================================================================
+     👻 卸载后阴魂不散：它复活了，而且开始疯狂弹广告
+     弹窗越关越多、越关越离谱，每关一次它都赚到钱。
+     ================================================================ */
+  var ghost = { count: 0, cash: 0, active: false, timer: null };
+  var GHOST_ADS = [
+    { title: "🎉 全家桶大师 感谢您的使用！", body: "您的卸载已成功。作为纪念，我们为您准备了「回归礼包」：重新安装即送 88 元会员（满 999 可用）。", btn: "查看礼包" },
+    { title: "📸 您有 3 张照片正在被云端整理", body: "我们的残留服务检测到您的相册很久没有备份了。开通云盘会员，让美好永不丢失（每月 29.9）。", btn: "立即备份" },
+    { title: "🔥 限时！您暗恋的软件正在打折", body: "全家桶大师 Pro（Lite 精简版）今日特价！比豪华版少了 97% 的功能，但便宜 3 元！", btn: "抢购" },
+    { title: "⚠️ 检测到您的电脑缺少 12 个必需组件", body: "这些组件原本由我提供。卸载后您的电脑将无法开机（不会的，但我们说说而已）。点击修复。", btn: "一键修复" },
+    { title: "💌 一封来自卸载程序的遗书", body: "亲爱的用户：当您读到这封信时，我已经不在您的电脑里了。但我在您的注册表里留了 217 封情书。想我了吗？", btn: "读取情书" },
+    { title: "🎊 恭喜！您成为本站第 1 位卸载成功用户", body: "为庆祝这一历史性时刻，我们决定……在您的桌面创建 9 个快捷方式作为纪念。", btn: "接受纪念" },
+    { title: "🩺 体检报告：您的电脑装了太多别的软件", body: "卸载了我之后，您的电脑被别的流氓软件占领了。不如……把我装回来？至少我们相识一场。", btn: "重拾旧爱" },
+    { title: "💸 您有一笔退款待领取", body: "由于您成功卸载，我们决定退还您 0.01 元。领取需填写银行卡号、身份证号、您母亲的姓氏及初恋姓名。", btn: "领取退款" },
+    { title: "🎮 卸载答题挑战", body: "答题赢积分，积分换礼品！第一题：「全家桶大师」的开发者最爱的一句话是？A.用户至上 B.感谢您送孩子上兴趣班", btn: "开始答题" },
+    { title: "👻 我是残留文件 4 KB 先生", body: "我只有 4 KB，但我的梦想是 2.1 GB。请给我一次重新安装的机会，我会努力长大的（一定会）。", btn: "助它成长" },
+    { title: "📢 您的输入法想念您了", body: "它其实不是我们的组件，但我们卸载时顺手帮您留了下来。想激活完整词库？仅需 19.9 元/月。", btn: "激活词库" },
+    { title: "🌟 五星好评邀请", body: "您已成功卸载。请为本次卸载体验打分（1-5 星）。评分低于 5 星将被视为「仍需挽留」，我们将安排回访。", btn: "五星好评" }
+  ];
+  function ghostSpawn() {
+    if (!ghost.active) return;
+    ghost.count++;
+    var earn = 0.03 + Math.random() * 0.47;
+    ghost.cash += earn; un.cash += earn; unRender();
+    var ad = GHOST_ADS[Math.floor(Math.random() * GHOST_ADS.length)];
+    var layer = document.createElement("div");
+    layer.className = "ghost-ad-layer";
+    layer.setAttribute("data-ghost","1");
+    layer.style.cssText = 'position:fixed;z-index:' + (200 + ghost.count) + ';left:' + (8 + Math.random()*55) + '%;top:' + (6 + Math.random()*55) + '%;max-width:340px;background:var(--panel);border:1px solid var(--acc);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.6);overflow:hidden;font-size:13px;';
+    layer.innerHTML =
+      '<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:#0a0f19;border-bottom:1px solid var(--line);font-size:11px;color:var(--dim)">' +
+      '<span style="width:9px;height:9px;border-radius:50%;background:#ff5f56;display:inline-block"></span>' +
+      '<span style="width:9px;height:9px;border-radius:50%;background:#ffbd2e;display:inline-block"></span>' +
+      '<span style="width:9px;height:9px;border-radius:50%;background:#27c93f;display:inline-block"></span>' +
+      '<span style="flex:1"></span><span>Ghost_Ad_v' + ghost.count + '.exe（已阻止卸载）</span></div>' +
+      '<div style="padding:12px 14px">' +
+      '<p style="margin:0 0 6px;font-weight:700;color:var(--warn)">' + escapeHtml(ad.title) + '</p>' +
+      '<p style="margin:0 0 10px;color:var(--fg2);line-height:1.6">' + escapeHtml(ad.body) + '</p>' +
+      '<div class="btnrow"><button class="btn sm" data-ga="ok">' + escapeHtml(ad.btn) + '</button>' +
+      '<button class="btn ghost sm" data-ga="close">关闭</button></div></div>';
+    document.body.appendChild(layer);
+    function close(earnMore) {
+      if (earnMore) {
+        ghost.cash += 0.8; un.cash += 0.8;
+        AH.toast("感谢点击！广告主已付款 ¥0.80", true);
+        AH.beep("bad");
+      } else {
+        AH.toast("弹窗关闭。同时，另一只弹窗已出生。", true);
+        AH.beep("bad");
+      }
+      if (layer.parentNode) layer.parentNode.removeChild(layer);
+      unRender();
+      var delay = Math.max(1200, 4200 - ghost.count * 350);
+      ghost.timer = setTimeout(ghostSpawn, delay);
+    }
+    layer.querySelector('[data-ga="ok"]').addEventListener("click", function(){ close(true); });
+    layer.querySelector('[data-ga="close"]').addEventListener("click", function(){ close(false); });
+    if (ghost.count === 1) {
+      unLog('<span class="err">[复活]</span> 卸载后 1.2 秒，它的第一只广告弹窗上线了。标题很怀念，内容很要钱。');
+    }
+  }
+  function startGhostAds() {
+    if (ghost.active) return;
+    ghost.active = true;
+    ghost.count = 0;
+    ghost.timer = setTimeout(ghostSpawn, 1200);
+    var card = $("uninstallCard");
+    if (card && !$("btnExorcise")) {
+      var row = document.createElement("div");
+      row.className = "btnrow mt12";
+      var b = document.createElement("button");
+      b.className = "btn danger sm";
+      b.id = "btnExorcise";
+      b.textContent = "⚔️ 终极驱魔（关闭全部弹窗并清空残留）";
+      b.addEventListener("click", function(){
+        stopGhostAds();
+        AH.beep("ok");
+        AH.spawn(20, AH.MEMES);
+        if (unStatusEl) {
+          unStatusEl.innerHTML = '<span class="ok">⚔️ 驱魔完成。</span> 全部弹窗已关闭，4 KB 残留已删除，217 个注册表项已清空。它这一次，真的走了。';
+        }
+        AH.toast("驱魔成功。它挣的钱不退。", false);
+      });
+      row.appendChild(b);
+      card.appendChild(row);
+    }
+  }
+  function stopGhostAds() {
+    ghost.active = false;
+    if (ghost.timer) { clearTimeout(ghost.timer); ghost.timer = null; }
+    var all = document.querySelectorAll(".ghost-ad-layer");
+    for (var i = 0; i < all.length; i++) {
+      if (all[i].parentNode) all[i].parentNode.removeChild(all[i]);
+    }
+    unLog('<span class="ok">[驱魔]</span> 共关闭 ' + ghost.count + ' 只弹窗。它本次共赚到 ¥' + ghost.cash.toFixed(2) + '（弹窗分成）。');
+  }
+  function showRetry() {
+    var r = $("btnUnRetry");
+    if (r) {
+      r.classList.remove("hidden");
+      r.onclick = function () {
+        r.classList.add("hidden");
+        unReset();
+        unStep = 0;
+        unStartReal();
+      };
+    }
+  }
+
+  function unStartReal() {
+    un.running = true;
+    unReset();
+    unLog('<span class="info">[任务]</span> 目标：全家桶大师 Pro Max 豪华版（安装体积 2.1 GB，卸载需要勇气）');
+    unLog('<span class="dim">提示：每一步它都会试图让你花钱、看广告、留下来，或者顺手装点别的。选那个不那么亏的。</span>');
+    unStep = 0;
+    unShowStep();
+  }
+
+  var btnUnStart = $("btnUnStart");
+  if (btnUnStart) {
+    btnUnStart.addEventListener("click", function () {
+      if (btnUnStart.parentNode) btnUnStart.parentNode.removeChild(btnUnStart);
+      unStartReal();
+    });
+  }
+})();
+</script>
+</body>
+</html>

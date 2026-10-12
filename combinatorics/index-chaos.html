@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>组合测试 [混沌] · Anti-Human Tests</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="ahnav" id="ahNav"></nav>
+
+<div class="wrap">
+
+  <div class="warnline">⚠️ 仅供娱乐，请勿用于伪造真实崩溃日志 / 现实生活。</div>
+
+  <div class="card">
+    <h1 class="title-glitch" data-t="组合测试">组合测试</h1>
+    <p class="muted">7 道货真价实的组合数学题，外加 3 台会算数的玩具机。答对没奖，答错有完整的推导。</p>
+    <p class="small muted">本测试不提供「老师这题超纲了」按钮。所有公式都会在提交之后当场摊开给你看。</p>
+    <div class="row mt12">
+      <span class="badge">#离散数学</span>
+      <span class="badge">#数数</span>
+      <span class="badge warn">#越算越想报警</span>
+      <span class="badge chaos">#BigInt 警告</span>
+    </div>
+  </div>
+
+  <div class="card danger">
+    <div class="row">
+      <div><b>📊 当前得分</b> <span class="score" id="score">0 / 7</span></div>
+      <div><span class="badge" id="badgeDone">已答 0 / 7</span></div>
+    </div>
+    <div class="prog mt12"><i id="progBar" style="width:0%"></i></div>
+    <div class="qfoot">
+      <button class="btn ghost sm" id="btnReset">↺ 重置答卷</button>
+      <button class="btn chaos sm" id="btnPigeon">🎉 鸽巢一下</button>
+      <span class="muted small" id="tick">AH 计数器：0 次自我怀疑</span>
+    </div>
+  </div>
+
+  <div id="quiz"></div>
+
+  <div class="card" id="verdictCard">
+    <div class="qhead"><b>🧾 最终判定</b></div>
+    <div class="verdict" id="verdict">还没答完。题目不会自己消失，但你可以关掉这个页面。</div>
+  </div>
+
+  <div class="card">
+    <h2>🪜 帕斯卡三角生成器</h2>
+    <p class="muted small">第 n 行第 k 个数就是 C(n−1, k−1)。递推关系：<span class="info">C(n,k) = C(n−1,k−1) + C(n−1,k)</span>。</p>
+    <div class="row">
+      <div class="field">
+        <label for="pasN">行数 N（1–20）</label>
+        <input type="number" id="pasN" value="8" min="1" max="20">
+      </div>
+      <button class="btn" id="btnPas">生成三角</button>
+      <span class="badge" id="pasBadge">待机</span>
+    </div>
+    <pre class="term mt12" id="pasOut">(尚未生成)</pre>
+  </div>
+
+  <div class="card">
+    <h2>🎲 生日悖论计算器</h2>
+    <p class="muted small">P(至少两人同生日) = 1 − ∏<sub>i=0..n−1</sub> (365−i)/365。忽略 2 月 29 日，也忽略你朋友的生日聚会。</p>
+    <div class="row">
+      <div class="field">
+        <label for="bdN">人数 n（1–500）</label>
+        <input type="number" id="bdN" value="30" min="1" max="500">
+      </div>
+      <button class="btn" id="btnBd">算一下</button>
+      <span class="badge" id="bdBadge">待机</span>
+    </div>
+    <pre class="term mt12" id="bdOut">(尚未计算)</pre>
+  </div>
+
+  <div class="card">
+    <h2>🧮 卡特兰数表（BigInt 版）</h2>
+    <p class="muted small">C<sub>n</sub> = C(2n, n)/(n+1)。用 <span class="ok">BigInt</span> 计算：普通 Number 在 C<sub>31</sub> 附近就超过 2<sup>53</sup>，开始悄悄吐出不精确的数字。</p>
+    <div class="row">
+      <div class="field">
+        <label for="catN">个数 N（1–40）</label>
+        <input type="number" id="catN" value="12" min="1" max="40">
+      </div>
+      <button class="btn" id="btnCat">列出卡特兰数</button>
+      <span class="badge" id="catBadge">待机</span>
+    </div>
+    <pre class="term mt12" id="catOut">(尚未生成)</pre>
+  </div>
+
+  <div class="card danger">
+    <h2>🐦 鸽巢应急按钮</h2>
+    <p class="muted small">当 n &gt; m 时，n 只鸽子塞进 m 个巢，必有至少一个巢里挤着 ⌈n/m⌉ 只鸽子。这是本页面唯一会飞的定理。</p>
+    <button class="btn warn" id="btnPigeon2">🎉 鸽巢一下</button>
+  </div>
+
+</div>
+
+<div class="foot">
+  <p>Anti-Human Tests · 反人类测试系列 · <a -chaos.html>返回首页</a></p>
+  <p class="small">如果有人因为这个项目友尽，作者概不负责。</p>
+</div>
+
+<script>window.AH_MODE="chaos";</script><script src="../assets/chaos.js"></script>
+<script>
+AH.init({ title: "组合测试", page: "combinatorics/" });
+
+/* ============ 小工具 ============ */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+let ticks = 0;
+function tick(n) {
+  ticks += n || 1;
+  $("#tick").textContent = "AH 计数器：" + ticks + " 次自我怀疑";
+}
+
+/* ============ 题库 ============ */
+const QZ = [
+  {
+    tag: "错排 D(n)",
+    type: "num",
+    text: "4 封信随机装入 4 个已写好地址的信封。问：4 封信全部装错的方案数 D(4) 是多少？",
+    ans: 9,
+    why: "错排数公式 D(n) = n! · Σ<sub>k=0..n</sub> (−1)<sup>k</sup>/k!。" +
+         "<br>D(4) = 4! × (1 − 1/1! + 1/2! − 1/3! + 1/4!) = 24 × (1 − 1 + 1/2 − 1/6 + 1/24) = 24 × 9/24 = <b>9</b>。" +
+         "<br>递推写法：D(n) = (n−1)·(D(n−1) + D(n−2))，从 D(1)=0、D(2)=1 出发：D(3)=2，D(4)=9。"
+  },
+  {
+    tag: "卡特兰数",
+    type: "mc",
+    text: "有多少个合法的括号序列，恰好包含 4 对括号（例如 (()()) 合法，())( 不合法）？",
+    opts: ["8", "14", "16", "42"],
+    ans: 1,
+    why: "n 对括号的合法序列数是第 n 个卡特兰数 C<sub>n</sub> = (1/(n+1))·C(2n,n)。" +
+         "<br>C<sub>4</sub> = C(8,4)/5 = 70/5 = <b>14</b>。同一串数还数着 n 个结点的二叉树形态数、以及 n 边凸多边形的三角剖分数。" +
+         "<br>序列开头：1, 1, 2, 5, 14, 42, 132, …（选项 42 是 C<sub>5</sub>，典型陷阱）。"
+  },
+  {
+    tag: "容斥原理",
+    type: "num",
+    text: "1 到 1000 中，有多少个整数不能被 2、3、5 中任何一个整除？",
+    ans: 266,
+    why: "容斥：|A∪B∪C| = Σ|A| − Σ|A∩B| + |A∩B∩C|。" +
+         "<br>被 2 整除 500 个，被 3 整除 ⌊1000/3⌋=333 个，被 5 整除 200 个；" +
+         "<br>同时被 2,3 整除 ⌊1000/6⌋=166，被 2,5 整除 100，被 3,5 整除 ⌊1000/15⌋=66；三个都整除 ⌊1000/30⌋=33。" +
+         "<br>至少被一个整除 = 500+333+200 − 166 − 100 − 66 + 33 = 734。" +
+         "<br>所以答案 = 1000 − 734 = <b>266</b>。"
+  },
+  {
+    tag: "帕斯卡恒等式",
+    type: "num",
+    text: "已知帕斯卡恒等式 C(n,k) = C(n−1,k−1) + C(n−1,k)。请计算 C(11,5) 的值。",
+    ans: 462,
+    why: "帕斯卡恒等式说明：C(10,4) + C(10,5) = C(11,5)。" +
+         "<br>C(10,4) = 210，C(10,5) = 252，合计 210 + 252 = <b>462</b>。" +
+         "<br>直接算：C(11,5) = 11!/(5!·6!) = (11×10×9×8×7)/(5×4×3×2×1) = 55440/120 = 462。✔ 两条路互相验证。"
+  },
+  {
+    tag: "鸽巢原理",
+    type: "mc",
+    text: "抽屉里有红、黄、蓝三种颜色的袜子（数量管够）。至少随机取出多少只，才能保证一定有 4 只同色？",
+    opts: ["7", "9", "10", "13"],
+    ans: 2,
+    why: "最坏情况下每种颜色各取 3 只，共 3×3 = 9 只，此时仍然没有 4 只同色。" +
+         "<br>再取第 10 只时，无论是什么颜色，那种颜色就凑齐 4 只。所以答案 = 3×(4−1) + 1 = <b>10</b>。" +
+         "<br>通用式：要保证有 k 只同色、共 m 种颜色，需要 m(k−1) + 1 只。"
+  },
+  {
+    tag: "第二类斯特林数",
+    type: "num",
+    text: "把 5 个互不相同的球放入 3 个完全相同的盒子里，不允许空盒。方案数 S(5,3) 是多少？",
+    ans: 25,
+    why: "第二类斯特林数递推：S(n,k) = k·S(n−1,k) + S(n−1,k−1)。" +
+         "<br>边界 S(1,1)=1。算出 S(4,2)=7、S(4,3)=6。" +
+         "<br>S(5,3) = 3×S(4,3) + S(4,2) = 3×6 + 7 = <b>25</b>。" +
+         "<br>另一种算法：先按「盒子有标签」算 3<sup>5</sup>=243，减去空盒情况得 150，再除以 3! = 6 得 25。✔"
+  },
+  {
+    tag: "整数拆分 / 生成函数",
+    type: "num",
+    text: "把正整数 6 拆成若干个正整数之和（顺序不计，例如 3+3 与 6 算不同拆法），共有多少种拆法 p(6)？",
+    ans: 11,
+    why: "整数拆分的生成函数是 ∏<sub>k≥1</sub> 1/(1 − x<sup>k</sup>)，p(n) 就是 x<sup>n</sup> 的系数。" +
+         "<br>p(6) 的 11 种拆法：6；5+1；4+2；4+1+1；3+3；3+2+1；3+1+1+1；2+2+2；2+2+1+1；2+1+1+1+1；1+1+1+1+1+1。" +
+         "<br>所以 p(6) = <b>11</b>。参考序列：p(1..6) = 1, 2, 3, 5, 7, 11。"
+  }
+];
+
+const state = QZ.map(() => ({ answered: false, correct: false }));
+
+/* ============ 渲染题库 ============ */
+function buildQuiz() {
+  $("#quiz").innerHTML = QZ.map((q, i) => {
+    let body = '<div class="qhead"><span class="badge chaos">Q' + (i + 1) + '</span> ' +
+               '<span class="muted small">' + q.tag + '</span> ' +
+               '<span class="badge" id="bd-' + i + '">未作答</span></div>';
+    body += '<div class="qtext">' + q.text + '</div>';
+    if (q.type === "num") {
+      body += '<div class="row mt12"><input type="number" id="in-' + i + '" placeholder="输入一个整数" inputmode="numeric">' +
+              '<button class="btn" data-sub="' + i + '">提交</button></div>';
+    } else {
+      body += '<div class="opts mt12">' + q.opts.map((o, j) =>
+        '<button class="opt" data-mc="' + i + '" data-k="' + j + '"><span class="k">' + "ABCD"[j] + '</span>' + o + '</button>'
+      ).join("") + '</div>';
+    }
+    body += '<div class="why hidden" id="why-' + i + '"><b>解析：</b>' + q.why + '</div>';
+    return '<div class="card" id="card-' + i + '">' + body + '</div>';
+  }).join("");
+}
+
+function mark(i, correct, pickedKey) {
+  if (state[i].answered) return;
+  state[i].answered = true;
+  state[i].correct = correct;
+  const bd = $("#bd-" + i);
+  bd.className = "badge " + (correct ? "ok" : "bad");
+  bd.textContent = correct ? "正确 ✓" : "错误 ✗";
+  $("#why-" + i).classList.remove("hidden");
+  const card = $("#card-" + i);
+  if (card) card.classList.toggle("danger", !correct);
+  AH.beep(correct ? "ok" : "bad");
+  if (!correct) AH.toast("错了。但至少错得很具体，" + AH.pick(AH.MEMES), true);
+  else AH.toast("对。这一题是货真价实的数学。", false);
+  tick(1);
+  updateScore();
+}
+
+function updateScore() {
+  const done = state.filter(s => s.answered).length;
+  const sc = state.filter(s => s.correct).length;
+  $("#score").textContent = sc + " / " + QZ.length;
+  $("#badgeDone").textContent = "已答 " + done + " / " + QZ.length;
+  $("#progBar").style.width = (done / QZ.length * 100) + "%";
+  if (done === QZ.length) verdict(sc);
+}
+
+function verdict(sc) {
+  const v = $("#verdict");
+  let text, cls;
+  if (sc === 7) { text = "🧠 组合学之神：D(n)、Catalan、Stirling 都拦不住你。建议立刻去改写本页面的题解。"; cls = "ok"; }
+  else if (sc >= 5) { text = "📐 认真学过：公式记得住，边界条件偶尔打滑。离散数学老师会点头。"; cls = "ok"; }
+  else if (sc >= 3) { text = "🎲 靠猜的：一半是数学，一半是玄学。建议重看容斥原理那一节。"; cls = "warn"; }
+  else if (sc >= 1) { text = "🪑 建议重修离散数学：至少你诚实。容斥和斯特林数在向你招手。"; cls = "bad"; }
+  else { text = "🐦 你被鸽了：0 分。鸽巢原理唯一保证的是——三个巢里必有一个装着你。"; cls = "bad"; }
+  v.className = "verdict " + cls;
+  v.innerHTML = "<b>" + sc + " / " + QZ.length + "</b> — " + text;
+  AH.toast("答卷完成：" + sc + "/" + QZ.length + "。截图存档，概不负责。", sc < 3);
+  if (sc < 3) { AH.spawn(10); }
+}
+
+/* ============ 事件委托 ============ */
+document.addEventListener("click", e => {
+  const mc = e.target.closest("[data-mc]");
+  if (mc) {
+    const i = +mc.dataset.mc, k = +mc.dataset.k;
+    if (state[i].answered) return;
+    const opts = $$('[data-mc="' + i + '"]');
+    opts.forEach(o => { o.classList.remove("sel"); o.disabled = true; });
+    mc.classList.add("sel");
+    const ok = (k === QZ[i].ans);
+    opts[QZ[i].ans].classList.add("ok");
+    if (!ok) mc.classList.add("bad");
+    mark(i, ok, k);
+    return;
+  }
+  const sub = e.target.closest("[data-sub]");
+  if (sub) {
+    const i = +sub.dataset.sub;
+    if (state[i].answered) return;
+    const raw = ($("#in-" + i).value || "").trim();
+    if (raw === "") { AH.toast("先输入一个整数再提交。空集不算答案。", true); return; }
+    const ok = (Number(raw) === QZ[i].ans);
+    sub.disabled = true;
+    $("#in-" + i).disabled = true;
+    mark(i, ok, raw);
+  }
+});
+
+$("#btnReset").addEventListener("click", () => {
+  state.forEach((s, i) => { s.answered = false; s.correct = false; });
+  buildQuiz();
+  $("#verdict").className = "verdict";
+  $("#verdict").textContent = "还没答完。题目不会自己消失，但你可以关掉这个页面。";
+  updateScore();
+  AH.stopAll();
+  AH.toast("答卷已重置。这一次请不要再靠直觉了。", false);
+});
+
+/* ============ 🪜 帕斯卡三角 ============ */
+function renderPascal(n) {
+  const rows = [];
+  for (let i = 0; i < n; i++) {
+    const r = [1];
+    for (let j = 1; j < i; j++) r.push(rows[i - 1][j - 1] + rows[i - 1][j]);
+    if (i > 0) r.push(1);
+    rows.push(r);
+  }
+  let maxLen = 1;
+  rows.forEach(r => r.forEach(x => { maxLen = Math.max(maxLen, String(x).length); }));
+  const w = maxLen + 1;
+  const lines = rows.map((r, i) => {
+    const body = r.map(x => String(x).padStart(w, " ")).join(" ");
+    const pad = " ".repeat(Math.floor((n - 1 - i) * w / 2));
+    return pad + body.trimEnd();
+  });
+  const last = rows[rows.length - 1];
+  const mid = last[Math.floor(last.length / 2)];
+  let out = lines.join("\n");
+  out += "\n\n<span class=\"dim\">// 共 " + n + " 行；最后一行中间那个数是 C(" + (n - 1) + "," + Math.floor((last.length - 1) / 2) + ") = " + mid + "</span>";
+  out += "\n<span class=\"info\">// 最后一行（第 " + (n - 1) + " 行）之和 = 2^" + (n - 1) + " = " + Math.pow(2, n - 1) + "</span>";
+  $("#pasOut").innerHTML = out;
+  $("#pasBadge").className = "badge ok";
+  $("#pasBadge").textContent = n + " 行 ✔";
+  AH.toast("三角已生成：" + n + " 行，" + (n * (n + 1) / 2) + " 个数。", false);
+  AH.beep("ok");
+  tick(1);
+}
+$("#btnPas").addEventListener("click", () => {
+  let n = parseInt($("#pasN").value, 10);
+  if (!isFinite(n)) { AH.toast("请输入 1–20 之间的整数。", true); return; }
+  n = Math.max(1, Math.min(20, n));
+  $("#pasN").value = n;
+  renderPascal(n);
+});
+
+/* ============ 🎲 生日悖论 ============ */
+function minN(target) {
+  let p = 1;
+  for (let k = 1; k <= 500; k++) {
+    if (k > 1) p *= (365 - (k - 1)) / 365;
+    if (1 - p > target) return k;
+  }
+  return ">500";
+}
+function calcBirthday(n) {
+  let p = 1;
+  for (let i = 0; i < n; i++) p *= (365 - i) / 365;
+  if (n > 365) p = 0;
+  const prob = 1 - p;
+  const pct = (prob * 100).toFixed(4);
+  let out = "<span class=\"info\">[birthday-paradox]</span> n = " + n + "\n";
+  out += "P(全部不同) = ∏<sub>i=0.." + (n - 1) + "</sub> (365−i)/365 = " + p.toExponential(6) + "\n";
+  out += "<span class=\"ok\">P(至少一对同生日) = " + pct + "%</span>\n\n";
+  out += "<span class=\"dim\">// 最少的 n 使概率 > 50% ：</span> " + minN(0.5) + " 人\n";
+  out += "<span class=\"dim\">// 最少的 n 使概率 > 99% ：</span> " + minN(0.99) + " 人\n";
+  if (n >= 366) out += "<span class=\"warn\">// n > 365，鸽巢原理直接终结比赛，概率为 1。</span>\n";
+  if (n >= 23 && n < 60) out += "<span class=\"chaos\">// 是的，23 个人就过半了。这不是玄学，是补集在数数。</span>\n";
+  $("#bdOut").innerHTML = out;
+  $("#bdBadge").className = "badge ok";
+  $("#bdBadge").textContent = pct + "% ✔";
+  AH.toast("n = " + n + " → 至少一对同生日的概率 " + pct + "%", false);
+  AH.beep("ok");
+  tick(1);
+}
+$("#btnBd").addEventListener("click", () => {
+  let n = parseInt($("#bdN").value, 10);
+  if (!isFinite(n)) { AH.toast("请输入 1–500 之间的整数。", true); return; }
+  n = Math.max(1, Math.min(500, n));
+  $("#bdN").value = n;
+  calcBirthday(n);
+});
+
+/* ============ 🧮 卡特兰数（BigInt） ============ */
+function binom(n, k) {
+  n = BigInt(n); k = BigInt(k);
+  if (k < 0n || k > n) return 0n;
+  if (k > n - k) k = n - k;
+  let r = 1n;
+  for (let i = 1n; i <= k; i++) r = r * (n - k + i) / i;
+  return r;
+}
+function catalan(n) { return binom(2 * n, n) / (BigInt(n) + 1n); }
+function renderCatalan(N) {
+  const lines = [];
+  for (let n = 0; n < N; n++) {
+    const c = catalan(n);
+    lines.push("C" + String(n).padStart(2, " ") + " = " + c.toString().padStart(24, " ") +
+      (n >= 31 ? "   <span class=\"warn\">// 普通 Number 在此已溢出</span>"
+               : n === 30 ? "   <span class=\"info\">// 最后一个能被 Number 精确表示的值</span>" : ""));
+  }
+  lines.push("");
+  lines.push("<span class=\"dim\">// 公式：C_n = C(2n, n) / (n+1)，全程 BigInt 整数除法，无浮点误差。</span>");
+  lines.push("<span class=\"info\">// Number.MAX_SAFE_INTEGER = 2^53 − 1 = " + Number.MAX_SAFE_INTEGER + "</span>");
+  $("#catOut").innerHTML = lines.join("\n");
+  $("#catBadge").className = "badge ok";
+  $("#catBadge").textContent = N + " 项 ✔";
+  AH.toast("已用 BigInt 列出前 " + N + " 个卡特兰数。", false);
+  AH.beep("ok");
+  tick(1);
+}
+$("#btnCat").addEventListener("click", () => {
+  let n = parseInt($("#catN").value, 10);
+  if (!isFinite(n)) { AH.toast("请输入 1–40 之间的整数。", true); return; }
+  n = Math.max(1, Math.min(40, n));
+  $("#catN").value = n;
+  renderCatalan(n);
+});
+
+/* ============ 🐦 鸽巢 ============ */
+const PIGEON_JOKES = [
+  "24 只鸽子，3 个巢 → 必有至少一个巢里挤着 8 只。它们没有申诉渠道。",
+  "鸽巢原理不负责告诉你哪只鸽子在哪，只保证一定有一只不太高兴。",
+  "n > m 时必有 ⌈n/m⌉ 只同巢。今天就先飞 24 只。",
+  "本页面共 7 个巢（题目），你至少会在 1 个巢里翻车。这就是数学。",
+  "⌈24/1⌉ = 24。看，一个巢的时候这个定理毫无信息量，但它依然成立。"
+];
+function pigeon() {
+  AH.spawn(24);
+  AH.toast(AH.pick(PIGEON_JOKES), false);
+  AH.beep("");
+  tick(1);
+}
+$("#btnPigeon").addEventListener("click", pigeon);
+$("#btnPigeon2").addEventListener("click", pigeon);
+
+/* ============ 启动 ============ */
+buildQuiz();
+renderPascal(8);
+renderCatalan(12);
+updateScore();
+</script>
+</body>
+</html>

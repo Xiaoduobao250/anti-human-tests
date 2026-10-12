@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MC 崩溃处理大挑战 · 反套路版 [混沌] · Anti-Human Tests</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="ahnav" id="ahNav"></nav>
+
+<div class="wrap">
+
+  <div class="warnline danger">⚠️ 仅供娱乐。本页所有崩溃日志都是编的，请勿用于伪造真实日志或欺骗他人。</div>
+
+  <div class="card danger">
+    <h1>😈 MC 崩溃处理大挑战 <span class="badge bad">反套路版</span></h1>
+    <p class="muted">上一版教你「看 Caused by」。这一版<b>专门骗你去看 Caused by</b>。</p>
+    <p class="small">栈顶的模组通常是<b>无辜的报信者</b>，Caused by 也可能是别人塞进来的假线索。
+      真正的凶手藏在：<span class="badge warn">JVM 参数</span> <span class="badge warn">资源包</span>
+      <span class="badge warn">驱动</span> <span class="badge warn">玩家自己</span> <span class="badge warn">磁盘</span></p>
+    <p class="small muted">其他版本：<a -chaos.html>正经版</a> · <a -chaos.html>混合套路版</a> · <a -chaos.html>混沌版</a></p>
+    <div class="qhead mt12">
+      <span>进度 <b id="qIdx">1</b>/<b id="qTot">0</b></span>
+      <span class="badge" id="diffBadge">—</span>
+      <span class="score">得分 <b id="score">0</b></span>
+      <div class="prog"><i id="progBar"></i></div>
+    </div>
+  </div>
+
+  <div class="card" id="stage">
+    <div class="quiz">
+      <div class="qhead">
+        <span class="badge chaos" id="caseTag">CASE</span>
+        <span class="muted small" id="caseHint"></span>
+      </div>
+      <p class="qtext" id="caseDesc"></p>
+      <pre class="qcode" id="caseLog"></pre>
+      <p class="small muted">👉 别急着怪栈顶。真正的问题是什么？</p>
+      <div class="opts" id="opts"></div>
+      <div class="why hidden" id="why"></div>
+      <div class="qfoot">
+        <button class="btn hidden" id="nextBtn">下一题 →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card hidden" id="finalCard">
+    <h2>🏁 你被骗了几次？</h2>
+    <p class="verdict" id="verdict"></p>
+    <p class="score" id="finalScore"></p>
+    <p class="small muted" id="finalNote"></p>
+    <div class="btnrow mt12">
+      <button class="btn" id="restartBtn">🔁 再来一轮</button>
+      <a class="btn ghost" -chaos.html>🎭 挑战混合套路版</a>
+      <button class="btn chaos sm" id="partyBtn">🎉 羞辱一下别人</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot">
+  <p>Anti-Human Tests · 反人类测试系列 · <a -chaos.html>返回首页</a></p>
+  <p class="small">如果有人因为这个项目友尽，作者概不负责。</p>
+</div>
+
+<script>window.AH_MODE="chaos";</script><script src="../assets/chaos.js"></script>
+<script>
+AH.init({ title: "MC 崩溃处理大挑战 · 反套路版", page: "mc-crash/" });
+
+var CASES = [
+  {
+    tag: "EVIL-001", diff: "easy",
+    desc: "服务器启动即崩，日志第一行就是某个模组。全服都说是它。",
+    hint: "提示：这个模组真的有错吗？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Don't do that then.\n" +
+"\n" +
+"Time: 2026-02-15 09:00:01\n" +
+"Description: Initializing game\n" +
+"\n" +
+"java.lang.UnsupportedClassVersionError: com/innocent/mod/Main has been compiled by a more recent version " +
+"of the Java Runtime (class file version 65.0), this version of the Java Runtime only recognizes class file " +
+"versions up to 61.0\n" +
+"\tat java.base/java.lang.ClassLoader.defineClass1(Native Method)\n" +
+"\tat net.minecraftforge.fml.loading.ModClassLoader.loadModClasses(ModClassLoader.java:88)\n" +
+"\tat net.minecraftforge.fml.ModLoader.runModLoading(ModLoader.java:413)",
+    opts: ["innocent 模组的作者用了新 Java 编译", "服务器用的是 Java 17，而这个模组需要 Java 21", "Forge 版本太低", "模组文件损坏"],
+    ok: 1,
+    why: "<b>陷阱</b>：选项 A 和 B 听起来像同一件事，但责任不同。" +
+         "类文件版本 65.0 = Java 21，61.0 = Java 17。<b>模组是照它自己的目标编译的，没错；" +
+         "是这台服务器的 JVM 版本不够。</b>解决方案是升级 Java，而不是去骂模组作者。" +
+         "注意栈顶出现 <code>UnsupportedClassVersionError</code> 时，<b>它根本不是模组的 bug</b>。"
+  },
+  {
+    tag: "EVIL-002", diff: "easy",
+    desc: "客户端进游戏后所有方块变成紫黑格子，接着崩了。日志指向某个模组。",
+    hint: "提示：紫黑格子是什么含义？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Surprise! Haha. Well, this is awkward.\n" +
+"\n" +
+"Time: 2026-02-15 09:14:22\n" +
+"Description: Rendering overlay\n" +
+"\n" +
+"java.lang.IllegalArgumentException: Texture atlas contains no sprite examplemod:block/fancy_block\n" +
+"\tat com.examplemod.client.AtlasStitcher.stitch(AtlasStitcher.java:140)\n" +
+"\tat net.minecraft.client.renderer.texture.TextureAtlas.reload(TextureAtlas.java:318)\n" +
+"\tat net.minecraft.client.Minecraft.runTick(Minecraft.java:1102)\n" +
+"Caused by: java.io.FileNotFoundException: assets/examplemod/textures/block/fancy_block.png\n" +
+"\tat net.minecraft.server.packs.FilePackResources.getResource(FilePackResources.java:78)",
+    opts: ["examplemod 模组的 jar 不完整，缺贴图文件", "examplemod 的贴图被某个资源包覆盖成了不存在的路径", "原版贴图图集坏了", "显卡不支持"],
+    ok: 1,
+    why: "<b>陷阱</b>：<code>FileNotFoundException</code> 看起来就是「mod 缺文件」。但关键词是" +
+         "<b>Texture atlas</b>（图集）和 <b>FilePackResources</b>——图集是从<b>所有资源包</b>合并的。" +
+         "装了一个覆盖 <code>examplemod</code> 命名空间的资源包，却没提供这张贴图，就会把原图集项" +
+         "<b>覆盖成空</b>。判断依据：如果 mod 本身缺文件，那么<b>不装资源包也应该崩</b>。"
+  },
+  {
+    tag: "EVIL-003", diff: "medium",
+    desc: "玩家开始建大基地后，每隔十几分钟卡死一次并崩溃。日志显示渲染线程崩了。",
+    hint: "提示：谁在增长？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// This doesn't make any sense!\n" +
+"\n" +
+"Time: 2026-02-15 10:33:40\n" +
+"Description: Rendering level\n" +
+"\n" +
+"java.lang.OutOfMemoryError: Java heap space\n" +
+"\tat java.nio.DirectByteBuffer.<init>(DirectByteBuffer.java:123)\n" +
+"\tat org.lwjgl.system.MemoryUtil.nmemAllocChecked(MemoryUtil.java:722)\n" +
+"\tat net.minecraft.client.renderer.chunk.RenderChunk.<init>(RenderChunk.java:97)\n" +
+"\tat com.fancyshaders.terrain.TerrainCache.upload(TerrainCache.java:210)\n" +
+"\tat net.minecraft.client.renderer.LevelRenderer.renderChunkLayer(LevelRenderer.java:901)",
+    opts: ["fancyshaders 光影模组的缓存无限增长", "Java 堆内存（-Xmx）设置得太小", "-Xmx 之外，这是被堆外内存/驱动资源耗尽，而根源是区块量大", "原版区块渲染有 bug"],
+    ok: 2,
+    why: "<b>陷阱</b>：看到 <code>OutOfMemoryError: Java heap space</code>，最常见的错误反应就是" +
+         "「加 <code>-Xmx</code>」。但栈里是 <code>DirectByteBuffer</code> + <code>MemoryUtil</code> ——" +
+         "<b>这是堆外内存（off-heap）</b>，<code>-Xmx</code> 管不着它。" +
+         "建基地 = 区块与渲染缓存增长，最终把原生内存顶爆。" +
+         "正确方向是限制渲染距离 / 更新光影 / 检查驱动，而不是无脑加堆。" +
+         "（顺带：这也常表现为 Xmx 没满却崩了。）"
+  },
+  {
+    tag: "EVIL-004", diff: "medium",
+    desc: "换了新电脑后，同样的整合包一开就崩，老电脑没事。",
+    hint: "提示：什么变了？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Hey, that tickles!\n" +
+"\n" +
+"Time: 2026-02-15 11:02:57\n" +
+"Description: Initializing game\n" +
+"\n" +
+"java.lang.IllegalStateException: GLFW error 65542: WGL: The driver does not appear to support OpenGL\n" +
+"\t... internal lwjgl error ...\n" +
+"\tat org.lwjgl.glfw.GLFW.glfwInit(GLFW.glfw.c)\n" +
+"\tat com.mojang.blaze3d.platform.Window.<init>(Window.java:88)\n" +
+"\tat net.minecraft.client.Minecraft.<init>(Minecraft.java:502)\n" +
+"Caused by: java.lang.IllegalStateException: OpenGL 2.1 or higher is required\n" +
+"\tat com.mojang.blaze3d.platform.GlDebugInfo.init(GlDebugInfo.java:61)",
+    opts: ["某个模组和 OpenGL 冲突", "新电脑的显卡驱动没装好/是微软基础显示适配器", "Java 版本不对", "整合包损坏"],
+    ok: 1,
+    why: "<b>陷阱</b>：日志里提到了模组加载顺序，很容易去查模组。但错误是 " +
+         "<code>WGL: The driver does not appear to support OpenGL</code> —— " +
+         "<b>系统级别根本没有可用的 OpenGL 驱动</b>。新装系统常见原因：" +
+         "还没装显卡驱动，用的是「Microsoft 基本显示适配器」，或远程桌面/虚拟机环境。" +
+         "这类报错<b>和模组毫无关系</b>，装驱动即可。"
+  },
+  {
+    tag: "EVIL-005", diff: "hard",
+    desc: "服务器每隔一段时间断开所有玩家，日志中报了一个模组异常，但重启后又好了。",
+    hint: "提示：注意「间隔」和「重启后恢复」。",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// I blame Dinnerbone.\n" +
+"\n" +
+"Time: 2026-02-15 12:20:03\n" +
+"Description: Exception in server tick loop\n" +
+"\n" +
+"java.lang.RuntimeException: Failed to save chunk\n" +
+"\tat com.worldsaver.chunk.SafeChunkWriter.write(SafeChunkWriter.java:151)\n" +
+"\tat net.minecraft.server.level.ChunkMap.save(ChunkMap.java:1024)\n" +
+"\tat net.minecraft.server.level.ServerChunkCache.save(ServerChunkCache.java:611)\n" +
+"\tat net.minecraft.server.MinecraftServer.tickServer(MinecraftServer.java:1512)\n" +
+"Caused by: java.io.IOException: No space left on device\n" +
+"\tat java.base/java.io.FileOutputStream.writeBytes(Native Method)",
+    opts: ["worldsaver 模组的存档逻辑有 bug", "服务器磁盘写满了", "区块数据损坏", "原版存档系统缺陷"],
+    ok: 1,
+    why: "<b>陷阱</b>：<code>Caused by: No space left on device</code> 已经说得非常明白了——" +
+         "<b>磁盘满了</b>。「重启后恢复」是因为重启过程清理了临时文件/日志，腾出了一点空间，" +
+         "过一阵又满。这是最能体现「读 Caused by 最内层」价值的案例：" +
+         "把 <code>worldsaver</code> 当凶手会永远修不好。"
+  },
+  {
+    tag: "EVIL-006", diff: "hard",
+    desc: "管理员打开控制台手动执行了一条指令后，服务器崩了。日志把锅甩给一个从没动过的模组。",
+    hint: "提示：栈里的东西是「谁」调用的？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Quite annoying.\n" +
+"\n" +
+"Time: 2026-02-15 13:44:12\n" +
+"Description: Ticking entity\n" +
+"\n" +
+"java.lang.ClassCastException: class net.minecraft.world.entity.animal.Pig cannot be cast to class " +
+"net.minecraft.world.entity.boss.enderdragon.EnderDragon\n" +
+"\tat com.zoo.tools.EntitySwapper.swap(EntitySwapper.java:66)\n" +
+"\tat com.zoo.commands.SwapCommand.run(SwapCommand.java:38)\n" +
+"\tat net.minecraft.commands.Commands.performCommand(Commands.java:322)\n" +
+"\tat net.minecraft.server.dedicated.DedicatedServer.handleConsoleInput(DedicatedServer.java:411)\n" +
+"\tat net.minecraft.server.dedicated.DedicatedServer.tickChildren(DedicatedServer.java:392)",
+    opts: ["zoo 模组的 EntitySwapper 有类型检查缺陷", "管理员用指令强行把猪换成了末影龙", "原版指令系统缺少校验", "两种说法都成立：模组缺校验，但触发条件是管理员的操作"],
+    ok: 3,
+    why: "<b>陷阱</b>：这是本页唯一「两边都有责任」的题。" +
+         "<code>EntitySwapper</code> 确实没做类型校验（缺陷），" +
+         "但<b>崩溃的直接触发是控制台执行的那条指令</b>。" +
+         "现实排查里，看到 <code>handleConsoleInput</code> 出现在栈里，就必须问一句：" +
+         "<b>「崩之前谁手动做了什么？」</b>——日志不会告诉你这个，只有人会。" +
+         "只盯着代码，会漏掉一半的真相。"
+  }
+];
+
+var idx = 0, score = 0, answered = false;
+document.getElementById("qTot").textContent = CASES.length;
+
+function diffLabel(d) { return d === "easy" ? "🟢 简单" : d === "medium" ? "🟡 中等" : "🔴 困难"; }
+
+function render() {
+  var c = CASES[idx];
+  answered = false;
+  document.getElementById("qIdx").textContent = idx + 1;
+  document.getElementById("caseTag").textContent = c.tag;
+  document.getElementById("caseHint").textContent = c.hint;
+  document.getElementById("caseDesc").textContent = c.desc;
+  document.getElementById("caseLog").textContent = c.log;
+  var db = document.getElementById("diffBadge");
+  db.textContent = diffLabel(c.diff);
+  db.className = "badge " + (c.diff === "easy" ? "ok" : c.diff === "medium" ? "warn" : "bad");
+
+  var box = document.getElementById("opts");
+  box.innerHTML = "";
+  var keys = ["A", "B", "C", "D"];
+  c.opts.forEach(function (text, i) {
+    var b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = '<span class="k">' + keys[i] + "</span><span>" + text + "</span>";
+    b.onclick = function () { answer(i); };
+    box.appendChild(b);
+  });
+
+  var w = document.getElementById("why");
+  w.className = "why hidden"; w.innerHTML = "";
+  var nb = document.getElementById("nextBtn");
+  nb.className = "btn hidden";
+  nb.textContent = (idx === CASES.length - 1) ? "查看被骗报告 →" : "下一题 →";
+  document.getElementById("progBar").style.width = Math.round((idx / CASES.length) * 100) + "%";
+}
+
+function answer(pick) {
+  if (answered) return;
+  answered = true;
+  var c = CASES[idx];
+  var right = (pick === c.ok);
+  if (right) { score++; AH.beep("ok"); AH.toast("没被骗，厉害"); }
+  else { AH.beep("bad"); AH.toast("上当了 😈", true); AH.shake(true); setTimeout(function () { AH.shake(false); }, 260); }
+
+  var all = document.querySelectorAll("#opts .opt");
+  all.forEach(function (b, i) {
+    b.disabled = true;
+    if (i === c.ok) b.classList.add("ok");
+    else if (i === pick) b.classList.add("bad");
+  });
+  document.getElementById("score").textContent = score;
+
+  var w = document.getElementById("why");
+  w.className = "why";
+  var keys = ["A", "B", "C", "D"];
+  w.innerHTML = "<b>" + (right ? "✅ 你躲过了陷阱。" : "❌ 答案是 " + keys[c.ok] + "。") + "</b><br>" + c.why;
+  document.getElementById("nextBtn").className = "btn";
+}
+
+function next() {
+  if (idx < CASES.length - 1) { idx++; render(); } else finish();
+}
+
+function finish() {
+  document.getElementById("stage").className = "card hidden";
+  document.getElementById("finalCard").className = "card";
+  var pct = score / CASES.length;
+  var v, n;
+  if (pct === 1) { v = "🧠 套路免疫体"; n = "六个陷阱全部识破。你大概修过太多整合包了。"; }
+  else if (pct >= 0.7) { v = "🕵️ 老练的排查员"; n = "只被最阴的一两次骗到。"; }
+  else if (pct >= 0.4) { v = "🙂 会看日志，但会被带偏"; n = "典型症状：一看到模组名就判死刑。"; }
+  else if (pct > 0) { v = "😵 容易被栈顶牵着走"; n = "你大概已经删过好几个无辜模组了。"; }
+  else { v = "🐑 完全上钩"; n = "全错。那些模组是清白的，你欠它们一个道歉。"; }
+  document.getElementById("verdict").textContent = v;
+  document.getElementById("finalScore").innerHTML = "得分 <b>" + score + "</b> / " + CASES.length;
+  document.getElementById("finalNote").textContent = n;
+  document.getElementById("progBar").style.width = "100%";
+}
+
+function restart() {
+  idx = 0; score = 0;
+  document.getElementById("score").textContent = "0";
+  document.getElementById("stage").className = "card";
+  document.getElementById("finalCard").className = "card hidden";
+  render();
+}
+
+document.getElementById("nextBtn").onclick = next;
+document.getElementById("restartBtn").onclick = restart;
+document.getElementById("partyBtn").onclick = function () {
+  AH.spawn(26); AH.beep(); AH.toast("🎉 去骗下一个朋友吧");
+};
+
+render();
+</script>
+</body>
+</html>

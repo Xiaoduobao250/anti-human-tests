@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MC 崩溃处理大挑战 · 正经版 · Anti-Human Tests</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="ahnav" id="ahNav"></nav>
+
+<div class="wrap">
+
+  <div class="warnline">⚠️ 仅供娱乐。本页所有崩溃日志都是编的，请勿用于伪造真实日志或欺骗他人。</div>
+
+  <div class="card">
+    <h1>⛏️ MC 崩溃处理大挑战 <span class="badge ok">正经版</span></h1>
+    <p class="muted">给你一份崩溃日志，四个模组里只有一个真凶。读栈、看包名、抓线索——这版是<b>讲道理</b>的。</p>
+    <p class="small muted">其他版本：<a href="evil.html">反套路版</a> · <a href="mixed.html">混合套路版</a> · <a href="chaos.html">混沌版</a></p>
+    <div class="qhead mt12">
+      <span>进度 <b id="qIdx">1</b>/<b id="qTot">0</b></span>
+      <span class="badge" id="diffBadge">—</span>
+      <span class="score">得分 <b id="score">0</b></span>
+      <div class="prog"><i id="progBar"></i></div>
+    </div>
+  </div>
+
+  <div class="card" id="stage">
+    <div class="quiz">
+      <div class="qhead">
+        <span class="badge chaos" id="caseTag">CASE</span>
+        <span class="muted small" id="caseHint"></span>
+      </div>
+      <p class="qtext" id="caseDesc"></p>
+      <pre class="qcode" id="caseLog"></pre>
+      <p class="small muted">👉 谁是这次崩溃的罪魁祸首？</p>
+      <div class="opts" id="opts"></div>
+      <div class="why hidden" id="why"></div>
+      <div class="qfoot">
+        <button class="btn hidden" id="nextBtn">下一题 →</button>
+        <button class="btn ghost sm hidden" id="againBtn">🔁 重开</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card hidden" id="finalCard">
+    <h2>🏁 你的诊断报告</h2>
+    <p class="verdict" id="verdict"></p>
+    <p class="score" id="finalScore"></p>
+    <p class="small muted" id="finalNote"></p>
+    <div class="btnrow mt12">
+      <button class="btn" id="restartBtn">🔁 再来一轮</button>
+      <a class="btn ghost" href="evil.html">😈 挑战反套路版</a>
+      <button class="btn chaos sm" id="partyBtn">🎉 庆祝一下</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot">
+  <p>Anti-Human Tests · 反人类测试系列 · <a href="../index.html">返回首页</a></p>
+  <p class="small">如果有人因为这个项目友尽，作者概不负责。</p>
+</div>
+
+<script src="../assets/chaos.js"></script>
+<script>
+AH.init({ title: "MC 崩溃处理大挑战 · 正经版", page: "mc-crash/" });
+
+/* =========================================================================
+   正经版题库：每个 case 的 cause 一定能在栈里找到直接证据。
+   线索类型：包名、异常类型、模组专属类名、mixin 注入点。
+   ========================================================================= */
+var CASES = [
+  {
+    tag: "CASE-001", diff: "easy",
+    desc: "服务器刚开服 3 秒就崩了，日志停在方块注册阶段。",
+    hint: "提示：看 Caused by 的最后一层。",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Don't do that then.\n" +
+"\n" +
+"Time: 2026-02-14 21:07:33\n" +
+"Description: Initializing game\n" +
+"\n" +
+"java.lang.NoClassDefFoundError: com/smellysock/core/SockRegistry\n" +
+"\tat com.smellysock.SmellySockMod.onCommonSetup(SmellySockMod.java:41)\n" +
+"\tat net.minecraftforge.fml.javafmlmod.FMLModContainer.acceptEvent(FMLModContainer.java:120)\n" +
+"\tat net.minecraftforge.eventbus.EventBus.post(EventBus.java:315)\n" +
+"\tat net.minecraftforge.fml.ModLoader.dispatchParallelEvent(ModLoader.java:539)\n" +
+"Caused by: java.lang.ClassNotFoundException: com.smellysock.core.SockRegistry\n" +
+"\tat net.minecraftforge.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:99)\n" +
+"\t... 24 more",
+    opts: ["smellysock（臭袜子模组）", "minecraftforge（Forge 本体）", "net.minecraft（原版）", "Java 运行时"],
+    ok: 0,
+    why: "栈顶就是 <code>com.smellysock.SmellySockMod</code>，缺的是它自己的 <code>SockRegistry</code> 类。" +
+         "Forge 只是替它转发了事件，原版和 JVM 都是被牵连的。包名认姓，<b>谁崩了看谁</b>。"
+  },
+  {
+    tag: "CASE-002", diff: "easy",
+    desc: "玩家一进入世界就崩客户端，服务端没事。",
+    hint: "提示：客户端侧渲染类。",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Hey, that tickles!\n" +
+"\n" +
+"Time: 2026-02-14 21:11:02\n" +
+"Description: Rendering screen\n" +
+"\n" +
+"java.lang.NullPointerException: Cannot invoke \"java.lang.String.length()\" because \"this.tooltip\" is null\n" +
+"\tat com.fancy.ui.FancyTooltipRenderer.render(FancyTooltipRenderer.java:88)\n" +
+"\tat net.minecraft.client.gui.screens.Screen.render(Screen.java:142)\n" +
+"\tat net.minecraft.client.Minecraft.runTick(Minecraft.java:1043)\n" +
+"Caused by: java.lang.NullPointerException: tooltip was never initialized\n" +
+"\tat com.fancy.ui.FancyTooltipRenderer.init(FancyTooltipRenderer.java:22)",
+    opts: ["net.minecraft.client（原版渲染）", "fancy（花哨 UI 模组）", "Java 图形库", "显卡驱动"],
+    ok: 1,
+    why: "<code>Caused by</code> 指向 <code>com.fancy.ui.FancyTooltipRenderer.init</code> —— 它没初始化 tooltip。" +
+         "原版只是调用者。判断真凶看 <b>Caused by 的最深处</b>，而不是最上面那行被牵连的。"
+  },
+  {
+    tag: "CASE-003", diff: "medium",
+    desc: "加了「更好的树叶」模组后，只要加载区块就崩，且只有装了 OptiFine 才复现。",
+    hint: "提示：谁和谁不兼容？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// This doesn't make any sense!\n" +
+"\n" +
+"Time: 2026-02-14 21:20:44\n" +
+"Description: Ticking chunk\n" +
+"\n" +
+"java.lang.NoSuchMethodError: 'void net.optifine.render.ChunkRenderDispatcher.rebuild(net.minecraft.world.level.chunk.LevelChunk)'\n" +
+"\tat com.betterleaves.mixin.ChunkRenderMixin.injectRebuild(ChunkRenderMixin.java:57)\n" +
+"\tat net.optifine.render.ChunkRenderDispatcher.rebuild(ChunkRenderDispatcher.java:210)\n" +
+"\tat net.minecraft.client.renderer.LevelRenderer.renderChunkLayer(LevelRenderer.java:884)",
+    opts: ["betterleaves（更好的树叶）", "optifine（光影前置）", "net.minecraft（原版区块渲染）", "两者不兼容导致的，无法单独归责"],
+    ok: 3,
+    why: "<code>NoSuchMethodError</code> 是<b>编译期与运行期签名不匹配</b>的典型信号：" +
+         "betterleaves 按原版签名做了 mixin，但 OptiFine 改写了 <code>ChunkRenderDispatcher.rebuild</code> 的签名。" +
+         "这属于经典的 <b>模组冲突</b>——双方都没有写错，是它们的假设互相打架。真实排查里这类问题一般表述为<b>不兼容</b>。"
+  },
+  {
+    tag: "CASE-004", diff: "medium",
+    desc: "长时间游玩后随机崩溃，每次栈都不一样，最后一份日志长这样。",
+    hint: "提示：注意 Caused by 里出现的东西和它所属的包。",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// I blame Dinnerbone.\n" +
+"\n" +
+"Time: 2026-02-14 22:41:19\n" +
+"Description: Exception ticking world\n" +
+"\n" +
+"java.lang.OutOfMemoryError: Java heap space\n" +
+"\tat java.util.Arrays.copyOf(Arrays.java:3537)\n" +
+"\tat it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap.grow(Long2ObjectOpenHashMap.java:410)\n" +
+"\tat com.hoarder.cache.EntityCache.put(EntityCache.java:64)\n" +
+"\tat com.hoarder.tick.EntityTickHandler.tick(EntityTickHandler.java:31)\n" +
+"\tat net.minecraftforge.eventbus.TickEventBridge.onTick(TickEventBridge.java:44)\n" +
+"Caused by: com.hoarder.cache.EntityCache never evicts entries\n" +
+"\tat com.hoarder.cache.EntityCache.put(EntityCache.java:64)",
+    opts: ["Java 堆内存太小", "hoarder（缓存模组内存泄漏）", "fastutil（集合库）", "Forge 事件总线"],
+    ok: 1,
+    why: "<code>OutOfMemoryError</code> 看起来像内存不够，但 <code>Caused by</code> 直接说了：" +
+         "<b>EntityCache never evicts entries</b>——只进不出，这是个内存泄漏。" +
+         "加载器给的 <code>-Xmx</code> 再大也只是延缓爆炸。<b>OOM 不等于内存不够，先查是否泄漏。</b>"
+  },
+  {
+    tag: "CASE-005", diff: "hard",
+    desc: "服务器启动时崩溃，日志里同时出现了两个模组，需要判断谁最先出错。",
+    hint: "提示：按调用顺序，最内层才是先错的。",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Quite annoying.\n" +
+"\n" +
+"Time: 2026-02-14 23:02:11\n" +
+"Description: Loading mod configs\n" +
+"\n" +
+"java.lang.IllegalStateException: Config already loaded\n" +
+"\tat com.earlybird.config.EarlyConfig.load(EarlyConfig.java:73)\n" +
+"\tat com.nightowl.core.NightOwlCore.readConfig(NightOwlCore.java:118)\n" +
+"\tat com.nightowl.core.NightOwlCore.setup(NightOwlCore.java:52)\n" +
+"\tat net.minecraftforge.fml.ModLoader.dispatchParallelEvent(ModLoader.java:539)\n" +
+"\tat net.minecraftforge.fml.ModLoader.runModLoading(ModLoader.java:413)\n" +
+"\t... 27 more",
+    opts: ["nightowl（夜猫子核心，它先调用了别人）", "earlybird（它判定配置已加载）", "Forge 的并行事件分发", "两个模组都在乱动同一份配置，属于互相踩踏"],
+    ok: 1,
+    why: "异常<b>抛出点</b>永远是最内层：<code>EarlyConfig.load</code> 是它自己抛的 <code>IllegalStateException</code>。" +
+         "nightowl 只是它的调用者。注意 Forge 的 <code>dispatchParallelEvent</code>——" +
+         "并行加载本身就会放大这种竞态，但<b>报错的还是 earlybird</b>。"
+  },
+  {
+    tag: "CASE-006", diff: "hard",
+    desc: "崩溃日志被截断过，关键栈帧丢失，只留下部分信息。",
+    hint: "提示：信息不全时，哪一种判断最诚实？",
+    log:
+"---- Minecraft Crash Report ----\n" +
+"// Surprise! Haha. Well, this is awkward.\n" +
+"\n" +
+"Time: 2026-02-14 23:31:07\n" +
+"Description: Ticking entity\n" +
+"\n" +
+"java.lang.ArrayIndexOutOfBoundsException: Index 4096 out of bounds for length 256\n" +
+"\tat com.worldgenplus.chunk.ChunkColumn.get(ChunkColumn.java:91)\n" +
+"\t... 38 more\n" +
+"\n" +
+"Stacktrace:\n" +
+"\tat net.minecraft.server.level.ServerLevel.tickChunk(ServerLevel.java:611)\n" +
+"\tat net.minecraft.server.level.ServerLevel.tick(ServerLevel.java:455)",
+    opts: ["worldgenplus（越界访问了它自己的 ChunkColumn）", "net.minecraft.server（原版 tick）", "Java 数组", "信息不足，中间 38 帧被省略，但直接肇事者是 worldgenplus"],
+    ok: 3,
+    why: "<code>... 38 more</code> 说明中间栈帧被省略了，<b>不能假装完整推理</b>。" +
+         "但首帧 <code>com.worldgenplus.chunk.ChunkColumn.get</code> 抛的越界是确凿的：" +
+         "256 长度的数组被按 4096 索引访问。诚实的结论是<b>直接肇事者可定位，完整链路无法还原</b>。"
+  }
+];
+
+/* --------------------------- 引擎 --------------------------- */
+var idx = 0, score = 0, answered = false;
+
+document.getElementById("qTot").textContent = CASES.length;
+
+function diffLabel(d) {
+  return d === "easy" ? "🟢 简单" : d === "medium" ? "🟡 中等" : "🔴 困难";
+}
+
+function render() {
+  var c = CASES[idx];
+  answered = false;
+  document.getElementById("qIdx").textContent = idx + 1;
+  document.getElementById("caseTag").textContent = c.tag;
+  document.getElementById("caseHint").textContent = c.hint;
+  document.getElementById("caseDesc").textContent = c.desc;
+  document.getElementById("caseLog").textContent = c.log;
+  document.getElementById("diffBadge").textContent = diffLabel(c.diff);
+  document.getElementById("diffBadge").className = "badge " +
+    (c.diff === "easy" ? "ok" : c.diff === "medium" ? "warn" : "bad");
+
+  var box = document.getElementById("opts");
+  box.innerHTML = "";
+  var keys = ["A", "B", "C", "D"];
+  c.opts.forEach(function (text, i) {
+    var b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = '<span class="k">' + keys[i] + '</span><span>' + text + "</span>";
+    b.onclick = function () { answer(i, b); };
+    box.appendChild(b);
+  });
+
+  document.getElementById("why").className = "why hidden";
+  document.getElementById("why").innerHTML = "";
+  document.getElementById("nextBtn").className = "btn hidden";
+  document.getElementById("nextBtn").textContent = (idx === CASES.length - 1) ? "查看诊断报告 →" : "下一题 →";
+  document.getElementById("againBtn").className = "btn ghost sm hidden";
+
+  var pct = Math.round((idx / CASES.length) * 100);
+  document.getElementById("progBar").style.width = pct + "%";
+}
+
+function answer(pick, btn) {
+  if (answered) return;
+  answered = true;
+  var c = CASES[idx];
+  var all = document.querySelectorAll("#opts .opt");
+  var right = (pick === c.ok);
+  if (right) { score++; AH.beep("ok"); AH.toast("正确，真凶归案"); }
+  else { AH.beep("bad"); AH.toast("抓错了，真凶还在笑", true); AH.shake(true); setTimeout(function () { AH.shake(false); }, 260); }
+
+  all.forEach(function (b, i) {
+    b.disabled = true;
+    if (i === c.ok) b.classList.add("ok");
+    else if (i === pick) b.classList.add("bad");
+  });
+
+  document.getElementById("score").textContent = score;
+  var w = document.getElementById("why");
+  w.className = "why";
+  var keys = ["A", "B", "C", "D"];
+  w.innerHTML = "<b>" + (right ? "✅ 答对了。" : "❌ 答案是 " + keys[c.ok] + "。") + "</b><br>" + c.why;
+
+  document.getElementById("nextBtn").className = "btn";
+  document.getElementById("againBtn").className = "btn ghost sm";
+  if (right) AH.spawn(4);
+}
+
+function next() {
+  if (idx < CASES.length - 1) { idx++; render(); }
+  else finish();
+}
+
+function finish() {
+  document.getElementById("stage").className = "card hidden";
+  document.getElementById("finalCard").className = "card";
+  var pct = score / CASES.length;
+  var v, n;
+  if (pct === 1) { v = "🏆 崩溃诊断之神"; n = "全对。你读栈的样子像在看法条。"; }
+  else if (pct >= 0.8) { v = "🥇 人类高质量排查员"; n = "你大概真的帮人修过模组崩溃。"; }
+  else if (pct >= 0.5) { v = "🥈 能跑就行"; n = "常识到位，细节偶尔翻车。"; }
+  else if (pct > 0) { v = "🥉 建议先看 Caused by"; n = "你的第一反应是怪原版或者怪内存。"; }
+  else { v = "💀 你的服务器已经没了"; n = "全错。但没关系，反正日志都是编的。"; }
+  document.getElementById("verdict").textContent = v;
+  document.getElementById("finalScore").innerHTML = "得分 <b>" + score + "</b> / " + CASES.length;
+  document.getElementById("finalNote").textContent = n;
+  document.getElementById("progBar").style.width = "100%";
+  if (pct >= 0.8) { AH.spawn(16); AH.beep("ok"); }
+}
+
+function restart() {
+  idx = 0; score = 0;
+  document.getElementById("score").textContent = "0";
+  document.getElementById("stage").className = "card";
+  document.getElementById("finalCard").className = "card hidden";
+  render();
+}
+
+document.getElementById("nextBtn").onclick = next;
+document.getElementById("againBtn").onclick = restart;
+document.getElementById("restartBtn").onclick = restart;
+document.getElementById("partyBtn").onclick = function () {
+  AH.spawn(26); AH.beep("ok"); AH.toast("🎉 庆祝！反正也不会更好");
+};
+
+render();
+</script>
+</body>
+</html>

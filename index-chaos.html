@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Anti-Human Tests · 反人类测试中心</title>
+<meta name="description" content="Anti-Human Tests：反人类测试系列。仅供娱乐，请勿用于伪造真实崩溃日志。">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<nav class="ahnav" id="ahNav"></nav>
+
+<div class="wrap">
+
+  <div class="warnline danger">
+    ⚠️ 本系列全部内容<b>仅供娱乐</b>：请勿用于伪造真实崩溃日志、欺骗他人或恶心真实的人。
+  </div>
+
+  <div class="card">
+    <h1><span class="title-glitch" data-t="Anti-Human Tests">Anti-Human Tests</span>
+      <span class="badge chaos">反人类测试</span>
+      <span class="badge warn">混沌形态</span>
+    </h1>
+    <p class="muted">A collection of tests that measure how much a human can endure.
+      这里没有一道题是为你好的，每一页都在试探你的耐心下限。</p>
+    <p class="small muted">本系列含快速闪烁、整页抖动与乱码背景，可能诱发光敏性癫痫 / 眩晕。进入任意页面都会先弹确认框。</p>
+    <div class="btnrow mt12">
+      <button class="btn chaos" id="luckyBtn">🎲 随机送我进一页</button>
+      <button class="btn ghost" id="panicBtn">⏹ 停止一切动效</button>
+      <button class="btn ghost" id="spawnBtn">🌀 先飞点东西再说</button>
+      <a class="btn ghost" href="index.html">🎓 回到正经形态</a>
+    </div>
+  </div>
+
+  <h2>📚 测试列表</h2>
+  <div class="grid auto" id="hubGrid"></div>
+
+  <div class="card mt12">
+    <h2>📖 文档</h2>
+    <div class="grid two">
+      <div>
+        <h3>🧭 设计原则</h3>
+        <p class="small muted">「反人类」不是乱来。所有恶意都经过设计：<a href="docs/design-principles.md">docs/design-principles.md</a></p>
+      </div>
+      <div>
+        <h3>💔 受害者故事集</h3>
+        <p class="small muted">友尽、砸键盘、被室友投诉的真实（编的）案例：<a href="docs/victim-stories.md">docs/victim-stories.md</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🧾 免责声明</h2>
+    <p class="small">本项目是玩笑与恶作剧的集合，不提供任何实用价值，也不保证任何数学题以外的正确答案真的「正确」（数学部分是认真的）。
+      由此产生的友尽、砸键盘、闪瞎眼、被公司开除等后果，作者概不负责。</p>
+    <p class="small muted">License: MIT · <a href="LICENSE">LICENSE</a> · 想贡献点更反人类的想法请看 <a href="CONTRIBUTING.md">CONTRIBUTING.md</a></p>
+  </div>
+
+</div>
+
+<div class="foot">
+  <p>Anti-Human Tests · 反人类测试系列</p>
+  <p class="small">如果有人因为这个项目友尽，作者概不负责。</p>
+</div>
+
+<script>window.AH_MODE="chaos";</script>
+<script src="assets/chaos.js"></script>
+<script>
+AH.init({ title: "反人类测试中心", page: "/" });
+
+var PAGES = [
+  ["mc-crash/index-chaos.html",        "⛏️ MC 崩溃处理大挑战", "给你一份崩溃日志，你要在 4 个版本里找出唯一的真凶。正经版 / 反套路版 / 混合套路版 / 混沌版。", "MC / 推理"],
+  ["cpp-quiz/index-chaos.html",        "📋 MC 崩溃处理能力评估", "18 道崩溃日志诊断。所有 A/B/C/D 都是错的，正确答案藏在 E 里，而 E 只有 20% 概率出现。", "MC / 测验"],
+  ["number-theory/index-chaos.html",   "🔢 数论测试",          "费马、欧拉、中国剩余定理、二次剩余。答不出来就别自称会取模。", "数学 / 数论"],
+  ["combinatorics/index-chaos.html",   "🎲 组合测试",          "错排、卡特兰、容斥、鸽巢。附带帕斯卡三角、生日悖论与卡特兰数计算器。", "数学 / 组合"],
+  ["fake-crash/index-chaos.html",      "💥 假 MC 崩溃页面",    "一键生成以假乱真的 Minecraft 崩溃报告。仅供娱乐，别拿去甩锅。", "假页面"],
+  ["fake-console/index-chaos.html",    "🖥️ 假 MC 控制台",      "一个会对你说的话做出反应的假服务器控制台。试试输入 help，或者 crash。", "假页面"],
+  ["fake-download/index-chaos.html",   "📥 假下载页面",        "下载进度永远卡在 87%。讽刺所有流氓下载站，但不会真的下载任何东西。", "假页面"],
+  ["java-crash/index-chaos.html",      "☕ Java 异常生成器",    "生成人类迷惑行为版 Java 异常日志，含猎奇异常对（F**kWatermelonException 等）。", "工具"]
+];
+
+(function () {
+  var g = document.getElementById("hubGrid");
+  var html = "";
+  for (var i = 0; i < PAGES.length; i++) {
+    var p = PAGES[i];
+    var tags = p[3].split(" / ").map(function (t) {
+      return '<span class="badge">' + t + "</span>";
+    }).join(" ");
+    html += '<div class="card">' +
+      "<h3>" + p[1] + "</h3>" +
+      '<p class="small muted">' + p[2] + "</p>" +
+      '<div class="mb12">' + tags + "</div>" +
+      '<a class="btn sm" href="' + p[0] + '">进入 →</a>' +
+      "</div>";
+  }
+  g.innerHTML = html;
+})();
+
+document.getElementById("luckyBtn").onclick = function () {
+  var p = AH.pick(PAGES)[0];
+  AH.toast("命运选择了：" + p);
+  AH.spawn(10);
+  setTimeout(function () { location.href = p; }, 420);
+};
+document.getElementById("panicBtn").onclick = function () {
+  AH.stopAll(); AH.setCalm(true); AH.toast("都停了，深呼吸");
+};
+document.getElementById("spawnBtn").onclick = function () {
+  AH.spawn(18); AH.beep(); AH.toast("这就是混沌的味道");
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MC 崩溃处理能力评估 · 内测版 v2.3.1 [混沌] · Anti-Human Tests</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="ahnav" id="ahNav"></nav>
+
+<div class="wrap">
+
+  <div class="warnline danger">⚠️ 仅供娱乐。本页所有崩溃日志都是编的，请勿用于伪造真实日志或欺骗他人。</div>
+
+  <div class="card">
+    <h1 class="title-glitch" data-t="MC 崩溃处理能力评估">MC 崩溃处理能力评估 <span class="badge chaos">内测版 v2.3.1</span></h1>
+    <p class="muted">18 道崩溃日志诊断，用于评估玩家对 FML / NeoForge 报错的定位能力。</p>
+    <p class="small muted">评分标准经过严格校准：答完之后 80% 的概率「就不给你答案」，
+      20% 的概率突然冒出一个 E 选项。请相信我们，这是为了你的成长。</p>
+    <p class="small muted">想换个被虐的方式？<a -chaos.html>🧪 去 C++ 未定义行为专场</a></p>
+    <div class="qhead mt12">
+      <span class="badge">第 <b id="qTag">1</b> 题</span>
+      <span class="badge" id="diffTag">常见</span>
+      <div class="prog"><i id="barFill"></i></div>
+      <span class="score" id="barText">0 / 18</span>
+    </div>
+  </div>
+
+  <div class="card" id="quizArea">
+    <div class="qtext" id="qTitle"></div>
+    <pre class="qcode" id="qLog"></pre>
+    <div class="opts" id="options"></div>
+    <div class="why hidden" id="explain"></div>
+    <div class="qfoot">
+      <button class="btn hidden" id="nextBtn">下一题 →</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="result">
+    <div class="center">
+      <div style="font-size:46px;font-weight:700;line-height:1.2;"><b id="finalScore">??</b> <span class="muted" style="font-size:18px;">/ 18</span></div>
+      <p class="verdict" id="rankTitle"></p>
+      <p class="small muted" id="rankDesc"></p>
+      <div class="btnrow" style="justify-content:center;margin-top:14px;">
+        <button class="btn" id="restartBtn">再来一局 ↻</button>
+        <button class="btn chaos sm" id="chaosBtn">🌀 我已知晓真相</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot">
+  <p>Anti-Human Tests · 反人类测试系列 · <a -chaos.html>返回首页</a></p>
+  <p class="small">如果有人因为这个项目友尽，作者概不负责。</p>
+</div>
+
+<script>window.AH_MODE="chaos";</script><script src="../assets/chaos.js"></script>
+<script>
+AH.init({ title: "MC 崩溃处理能力评估 · 内测版 v2.3.1", page: "cpp-quiz/" });
+
+/* ============ 题库 ============ */
+/* 注意：所有 A/B/C/D 选项都是错的，正确答案藏在 E 里，且 E 默认隐藏。
+   答完之后：80% 显示「就不给你答案」，20% 显示 E 选项。 */
+var QUESTIONS = [
+  {
+    diff: "easy",
+    title: "游戏启动时崩溃，日志如下。最可能的原因是什么？",
+    log:
+`java.lang.NoClassDefFoundError: kotlin/jvm/internal/Intrinsics
+    at com.example.mod.MyMod.<init>(MyMod.java:15)
+    at net.minecraftforge.fml.javafmlmod.FMLModContainer...`,
+    options: [
+      "模组文件在下载过程中出现了不完整的情况，导致 JVM 在加载类时找不到对应的 class 文件。建议先删除该模组重新下载。",
+      "模组作者在编写代码时没有正确处理异常，导致 JVM 在初始化阶段就崩溃了。建议去该模组的 Issue 区搜索类似问题。",
+      "显卡驱动过旧导致的，因为现代模组在加载时会调用 OpenGL 做一些预渲染。建议用 DDU 卸载驱动后重装最新版。",
+      "Java 版本与模组不匹配，class 文件的版本号对不上。建议换一个 Java 版本试试。"
+    ],
+    correctE: "缺 Kotlin for Forge 前置。报错里的 kotlin/jvm/internal/Intrinsics 就是 Kotlin 标准库。"
+  },
+  {
+    diff: "easy",
+    title: "游戏进世界后崩溃，日志如下。最可能的原因是什么？",
+    log:
+`java.lang.OutOfMemoryError: Java heap space
+    at net.minecraft.world.chunk.Chunk...`,
+    options: [
+      "模组在生成世界时出现了死循环，导致内存被无限占用。建议禁用所有地形模组后逐个排查。",
+      "显卡显存不足，MC 会把区块数据缓存在显存里。建议降低渲染距离，或者换一张显存更大的显卡。",
+      "世界存档已经损坏，Chunk 类在读取时拿到了异常数据。建议用 NBTExplorer 检查 level.dat。",
+      "Java 版本太新，JVM 的内存回收机制和模组不兼容。建议降级到 Java 8。"
+    ],
+    correctE: "JVM 堆内存不够。调大 -Xmx，或者减少模组数量。这是 OutOfMemoryError: Java heap space，不是 Metaspace。"
+  },
+  {
+    diff: "easy",
+    title: "启动时崩溃，日志如下。最可能的原因是什么？",
+    log:
+`java.lang.UnsupportedClassVersionError:
+    com/example/mod/MyMod has been compiled by a more recent
+    version of the Java Runtime (class file version 61.0),
+    this version of the Java Runtime only recognizes
+    class file versions up to 52.0`,
+    options: [
+      "模组文件损坏，class 文件在加载时被 JVM 误判为版本不兼容。建议删除该模组重新下载。",
+      "启动器的版本检测逻辑有问题，强制使用了内置的 Java 版本。建议换一个启动器。",
+      "模组是用 Java 8 编译的，但你的启动器配置的是 Java 17。需要把 Java 路径改成 Java 8。",
+      "Forge/NeoForge 版本和模组不匹配，模组要求的是 1.20.1，你装的是 1.19.2。"
+    ],
+    correctE: "Java 版本太老。class file version 61.0 对应 Java 17，52.0 对应 Java 8。换 Java 17 即可。"
+  },
+  {
+    diff: "easy",
+    title: "启动时崩溃，日志如下。最可能的原因是什么？",
+    log:
+`java.lang.NullPointerException
+    at com.example.mod.Config.load(Config.java:42)
+    at com.example.mod.MyMod.<clinit>(MyMod.java:20)`,
+    options: [
+      "Java 版本不匹配，静态初始化块的执行顺序在新版 Java 里变了。",
+      "显卡驱动崩溃，导致 OpenGL 上下文丢失，Config 里的引用变成 null。",
+      "模组重复安装，同一个类被两个类加载器加载，导致字段初始化混乱。",
+      "内存不足，JVM 在内存紧张时回收了配置对象，导致 NPE。"
+    ],
+    correctE: "配置文件缺失或损坏。NPE 发生在 Config.load，且是在 <clinit> 静态初始化块里。删掉 config 重新生成即可。"
+  },
+  {
+    diff: "easy",
+    title: "游戏崩溃，日志如下。最可能的原因是什么？",
+    log:
+`Exit Code: -1073741819 (0xC0000005)
+    Access Violation`,
+    options: [
+      "模组冲突，两个模组抢同一块内存导致访问冲突。",
+      "Java 版本不对，JVM 在旧版 Java 里对内存保护更严格。",
+      "内存条故障，访问冲突往往意味着硬件层面的内存读写错误。",
+      "操作系统版本太老，不支持 MC 使用的某些内存映射方式。"
+    ],
+    correctE: "显卡驱动异常，或者 Overlay 软件冲突。用 DDU 重装驱动，关掉 Discord/MSI Afterburner 试试。"
+  },
+  {
+    diff: "easy",
+    title: "启动时崩溃，日志如下。最可能的原因是什么？",
+    log:
+`Missing or unsupported dependency:
+    mod A requires mod B version [2.0,)
+    but mod B version 1.9 is present`,
+    options: [
+      "内存不足，依赖解析时 JVM 无法分配足够的空间。",
+      "Java 版本不对，依赖解析器在新版 Java 里行为变了。",
+      "启动器依赖解析 bug，建议换 Prism 或 ATLauncher。",
+      "模组 B 需要更新版 A，而不是 A 需要更新版 B。"
+    ],
+    correctE: "模组 A 需要更新版 B。依赖声明要求 B ≥ 2.0，但当前 B 是 1.9。升级 B 即可。"
+  },
+
+  /* ---------- 🟡 疑难杂症 ---------- */
+  {
+    diff: "mid",
+    title: "启动时崩溃，日志如下。最可能的原因是什么？",
+    log:
+`org.spongepowered.asm.mixin.throwables.MixinApplyError:
+    Mixin apply failed weirdmod.mixins.json:SomeMixin
+    -> net.minecraft.world.World:
+    java.lang.NoSuchMethodError:
+    net.minecraft.world.World.getBlockState(II)`,
+    options: [
+      "内存分配不足，Mixin 在生成字节码时耗尽了 Metaspace。",
+      "Mixin 优先级冲突，多个模组同时注入同一个方法。",
+      "Forge/NeoForge 版本太新，Mixin 还没适配。",
+      "Java 版本不匹配，Mixin 的字节码生成器和新版 JVM 不兼容。"
+    ],
+    correctE: "Mixin 注入点没了。新版 MC 里 World.getBlockState 的签名变了，WeirdMod 没适配。"
+  },
+  {
+    diff: "mid",
+    title: "启动时崩溃，日志如下。最可能的原因是什么？",
+    log:
+`java.lang.NoSuchMethodError:
+    com.othermod.InternalAPI.doSomething()V
+    at com.weirdmod.CompatHandler.hook(CompatHandler.java:42)`,
+    options: [
+      "内存分配不足，方法调用时栈空间不够。",
+      "显卡驱动异常，导致 OpenGL 调用链断裂。",
+      "Java 版本不匹配，方法签名在新版 Java 里变了。",
+      "WeirdMod 的兼容层写错了，作者没有做好版本判断。"
+    ],
+    correctE: "WeirdMod 调用了 OtherMod 已变更的内部 API。OtherMod 更新后改了方法签名，WeirdMod 没跟着适配。"
+  },
+  {
+    diff: "mid",
+    title: "启动时崩溃，日志如下。最可能的原因是什么？",
+    log:
+`java.lang.ExceptionInInitializerError
+    at com.example.mod.MyMod.<clinit>(MyMod.java:15)
+Caused by: java.lang.IllegalStateException:
+    Failed to load config`,
+    options: [
+      "内存分配不足，静态块在加载配置时 OOM。",
+      "模组作者在静态块里写了太多逻辑，JVM 初始化阶段就崩溃了。",
+      "Java 版本不兼容，静态初始化块的执行顺序变了。",
+      "模组和 Forge/NeoForge 版本不匹配，配置 API 改了。"
+    ],
+    correctE: "静态初始化时配置加载失败。检查 config 文件夹里该模组的配置，或者删掉重新生成。"
+  },
+  {
+    diff: "mid",
+    title: "游戏启动后卡死，日志如下。最可能的原因是什么？",
+    log:
+`[WARN] Detected a mod loading a class from another mod
+    before it was loaded.
+    [WARN] This may cause issues.`,
+    options: [
+      "内存分配不足，类加载器在等待内存时卡住。",
+      "启动器的类加载器实现有问题，建议换 Prism 或 HMCL。",
+      "Java 版本不匹配，类加载顺序在新版 Java 里变了。",
+      "模组文件损坏，类加载器读取时卡住。"
+    ],
+    correctE: "模组加载顺序异常。模组 A 在 B 还没加载完就访问了 B 的类，可能导致后续 NPE。"
+  },
+  {
+    diff: "mid",
+    title: "游戏进世界后崩溃，日志如下。最可能的原因是什么？",
+    log:
+`java.lang.IllegalStateException:
+    Block entity not found for pos ...
+    at com.example.mod.TileEntityHandler.tick(...)`,
+    options: [
+      "内存分配不足，方块实体在 tick 时被 GC 回收。",
+      "显卡驱动异常，渲染线程和逻辑线程不同步。",
+      "Java 版本不匹配，tick 的执行顺序变了。",
+      "世界存档损坏，TileEntityHandler 读到了异常数据。"
+    ],
+    correctE: "方块实体在 tick 时不存在。常见于世界保存损坏、模组版本不匹配、或者异步加载导致实体还没生成。"
+  },
+  {
+    diff: "mid",
+    title: "游戏崩溃，日志如下。最可能的原因是什么？",
+    log:
+`java.lang.IllegalAccessError:
+    tried to access class com.othermod.Internal
+    from class com.weirdmod.Compat`,
+    options: [
+      "内存分配不足，访问权限检查在内存紧张时失败。",
+      "显卡驱动异常，导致类加载器的权限检查出错。",
+      "Java 版本不匹配，模块系统在新版 Java 里更严格。",
+      "WeirdMod 的代码写错了，作者忘了加 public 修饰符。"
+    ],
+    correctE: "WeirdMod 访问了 OtherMod 的非公开类。这是典型的反射/硬蹭内部 API 导致的。"
+  },
+
+  /* ---------- 🔴 地狱级 ---------- */
+  {
+    diff: "hard",
+    title: "启动时崩溃，日志如下。最可能的原因是什么？",
+    log:
+`Mod resolution failed
+    mod A requires mod B version [2.0,)
+    but mod B version 1.9 is present
+    and mod A is incompatible with mod B version [2.0,)`,
+    options: [
+      "内存分配不足，依赖解析时 OOM。",
+      "显卡驱动异常，导致依赖解析器崩溃。",
+      "Java 版本不匹配，依赖区间语法在新版 Java 里变了。",
+      "启动器依赖解析 bug，建议换 Prism 或 ATLauncher。"
+    ],
+    correctE: "依赖版本区间是空集。A 要求 B ≥ 2.0，但 A 又和 B ≥ 2.0 冲突，无解。"
+  },
+  {
+    diff: "hard",
+    title: "启动时崩溃，日志如下。最可能的原因是什么？",
+    log:
+`java.lang.IncompatibleClassChangeError:
+    class com.othermod.SomeClass has interface
+    com.othermod.SomeInterface as super class`,
+    options: [
+      "内存分配不足，类结构在加载时被破坏。",
+      "显卡驱动异常，导致类加载器读取错误。",
+      "Java 版本不匹配，接口和父类的处理在新版 Java 里变了。",
+      "模组文件损坏，class 文件被截断。"
+    ],
+    correctE: "类结构在新版中发生了变化：一个原本是接口的类型变成了父类（或反过来），WeirdMod 编译时依赖的是旧结构。"
+  },
+  {
+    diff: "hard",
+    title: "启动时崩溃，日志如下。最可能的原因是什么？",
+    log:
+`java.lang.NoClassDefFoundError:
+    Could not initialize class com.example.mod.MyModConfig
+    at com.example.mod.MyMod.init(MyMod.java:30)
+Caused by: java.lang.ExceptionInInitializerError
+    at com.example.mod.MyModConfig.<clinit>(MyModConfig.java:12)
+Caused by: java.nio.file.NoSuchFileException:
+    config/mymod/config.json`,
+    options: [
+      "内存分配不足，类初始化时 OOM。",
+      "显卡驱动异常，导致文件读取失败。",
+      "Java 版本不匹配，文件路径处理在新版 Java 里变了。",
+      "模组文件损坏，MyModConfig.class 被截断。"
+    ],
+    correctE: "类初始化失败导致后续加载失败。根因是 NoSuchFileException，配置文件不存在。"
+  },
+  {
+    diff: "hard",
+    title: "启动时崩溃，日志如下。最可能的原因是什么？",
+    log:
+`java.lang.VerifyError:
+    Bad type on operand stack
+    at com.weirdmod.SomeClass.<init>(SomeClass.java)
+    at com.weirdmod.SomeMixin.apply(SomeMixin.java:42)`,
+    options: [
+      "内存分配不足，字节码校验时栈空间不够。",
+      "显卡驱动异常，导致 JVM 校验字节码失败。",
+      "Java 版本不匹配，VerifyError 在新版 Java 里更常见。",
+      "模组文件损坏，class 文件被截断。"
+    ],
+    correctE: "Mixin 生成的字节码不合法。常见于 Mixin/ASM 生成的代码不合法，或者 Mixin 版本太老。"
+  },
+  {
+    diff: "hard",
+    title: "游戏崩溃，日志如下。最可能的原因是什么？",
+    log:
+`java.lang.StackOverflowError
+    at com.example.mod.RecursiveHandler.handle(RecursiveHandler.java:15)
+    at com.example.mod.RecursiveHandler.handle(RecursiveHandler.java:15)
+    at com.example.mod.RecursiveHandler.handle(RecursiveHandler.java:15)
+    ...`,
+    options: [
+      "内存分配不足，栈空间在内存紧张时被压缩。",
+      "显卡驱动异常，导致递归调用链断裂。",
+      "Java 版本不匹配，递归深度限制在新版 Java 里变了。",
+      "模组文件损坏，RecursiveHandler.class 被截断。"
+    ],
+    correctE: "模组中存在无限递归。常见于事件监听里触发了自己，或者 Mixin 注入导致递归调用。"
+  },
+  {
+    diff: "hard",
+    title: "启动时崩溃，日志如下。最可能的原因是什么？",
+    log:
+`java.lang.LinkageError:
+    loader constraint violation:
+    when resolving method com.othermod.API.doThing()V
+    the class loader (instance of
+    net/minecraftforge/fml/loading/...)
+    of the current class, com/weirdmod/Compat,
+    and the class loader (instance of
+    net/minecraftforge/fml/loading/...)
+    for resolved class, com/othermod/API,
+    have different Class objects for the type`,
+    options: [
+      "内存分配不足，类加载器在解析方法时 OOM。",
+      "显卡驱动异常，导致类加载器读取错误。",
+      "Java 版本不匹配，类加载器机制在新版 Java 里变了。",
+      "模组文件损坏，API.class 被截断。"
+    ],
+    correctE: "同一个类被不同类加载器加载。常见于两个模组打包了不同版本的同一个库。"
+  }
+];
+
+/* ============ 逻辑 ============ */
+var LETTERS = ["A", "B", "C", "D"];
+var current = 0;
+var answered = 0;
+var locked = false;
+
+var $ = function (id) { return document.getElementById(id); };
+
+var DIFF_TEXT = { easy: "常见", mid: "疑难", hard: "地狱" };
+var DIFF_CLS = { easy: "badge ok", mid: "badge warn", hard: "badge bad" };
+
+function escapeHtml(s) {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function formatLog(log) {
+  var html = escapeHtml(log);
+  html = html.replace(
+    /^(java\.lang\.[A-Za-z]+Error|java\.lang\.[A-Za-z]+Exception|Exit Code:.*|Mod resolution failed|org\.spongepowered.*)$/gm,
+    '<span class="err">$1</span>'
+  );
+  html = html.replace(/^(Caused by:.*)$/gm, '<span class="err">$1</span>');
+  html = html.replace(/^(\[WARN\].*)$/gm, '<span class="warn">$1</span>');
+  html = html.replace(/^(\[INFO\].*)$/gm, '<span class="info">$1</span>');
+  html = html.replace(/^(\s+at .*)$/gm, '<span class="dim">$1</span>');
+  return html;
+}
+
+function render() {
+  var q = QUESTIONS[current];
+  locked = false;
+
+  $("qTag").textContent = String(current + 1);
+  var dt = $("diffTag");
+  dt.textContent = DIFF_TEXT[q.diff];
+  dt.className = DIFF_CLS[q.diff];
+
+  $("qTitle").textContent = q.title;
+  $("qLog").innerHTML = formatLog(q.log);
+
+  var opts = $("options");
+  opts.innerHTML = "";
+  q.options.forEach(function (text, idx) {
+    var btn = document.createElement("button");
+    btn.className = "opt";
+    btn.innerHTML = '<span class="k">' + LETTERS[idx] + "</span><span>" + text + "</span>";
+    btn.onclick = function () { choose(idx); };
+    opts.appendChild(btn);
+  });
+
+  /* 隐藏的 E 选项 */
+  var eBtn = document.createElement("button");
+  eBtn.className = "opt hidden";
+  eBtn.id = "optE";
+  eBtn.innerHTML = '<span class="k">E</span><span>' + q.correctE + "</span>";
+  eBtn.disabled = true;
+  opts.appendChild(eBtn);
+
+  var ex = $("explain");
+  ex.className = "why hidden";
+  ex.innerHTML = "";
+
+  var nb = $("nextBtn");
+  nb.className = "btn hidden";
+  nb.textContent = current === QUESTIONS.length - 1 ? "查看结果 →" : "下一题 →";
+
+  updateBar();
+}
+
+function choose(idx) {
+  if (locked) return;
+  locked = true;
+
+  var btns = document.querySelectorAll("#options .opt");
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].disabled = true;
+    if (i === idx) btns[i].classList.add("sel");
+    else if (btns[i].id !== "optE") btns[i].classList.add("dim");
+  }
+
+  answered++;
+  AH.beep("bad");
+
+  var ex = $("explain");
+  var rand = Math.random();
+
+  if (rand < 0.8) {
+    /* 80%：就不给你答案 */
+    ex.innerHTML = '<span class="err">✗ 答错了。</span><br>就不给你答案。';
+    AH.toast("答错了。至于答案是什么，看运气", true);
+  } else {
+    /* 20%：突然冒出 E 选项 */
+    var eBtn = $("optE");
+    eBtn.classList.remove("hidden");
+    ex.innerHTML = '<span class="err">✗ 你选的 A/B/C/D 都是错的。</span><br>' +
+                   '<span class="ok">正确答案是 E。</span>';
+    AH.toast("居然让你看到 E 了", false);
+    AH.spawn(6);
+  }
+
+  ex.classList.remove("hidden");
+  $("nextBtn").classList.remove("hidden");
+  updateBar();
+}
+
+function next() {
+  if (current < QUESTIONS.length - 1) {
+    current++;
+    render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } else {
+    showResult();
+  }
+}
+
+function updateBar() {
+  var done = locked ? current + 1 : current;
+  var pct = (done / QUESTIONS.length) * 100;
+  $("barFill").style.width = pct + "%";
+  $("barText").textContent = done + " / " + QUESTIONS.length;
+}
+
+function showResult() {
+  $("quizArea").className = "card hidden";
+  $("result").className = "card";
+
+  /* 分数永远显示 ?? */
+  $("finalScore").textContent = "??";
+
+  var ratio = answered / QUESTIONS.length;
+  var title, desc;
+
+  if (ratio === 1) {
+    title = "🏆 日志医生（自称）";
+    desc = "你答完了全部 18 题，但你一题都没答对。因为 A/B/C/D 全是错的。";
+  } else if (ratio >= 0.8) {
+    title = "🔥 崩溃排查专家（自称）";
+    desc = "你答了大部分题，但正确答案藏在 E 里，而 E 只在 20% 的情况下出现。";
+  } else if (ratio >= 0.5) {
+    title = "😎 老玩家（自称）";
+    desc = "你答了一半以上，但你选的 A/B/C/D 全是错的。";
+  } else if (ratio >= 0.2) {
+    title = "🙂 有点经验（自称）";
+    desc = "你答了一些题，但正确答案是 E。E 你见过吗？";
+  } else {
+    title = "💀 欢迎来到崩溃地狱";
+    desc = "你答了几题就发现了不对劲。恭喜你，你是唯一一个没被 A/B/C/D 骗到底的人。";
+  }
+
+  $("rankTitle").textContent = title;
+  $("rankDesc").textContent = desc;
+  updateBar();
+}
+
+function restart() {
+  current = 0;
+  answered = 0;
+  locked = false;
+  $("quizArea").className = "card";
+  $("result").className = "card hidden";
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+$("nextBtn").onclick = next;
+$("restartBtn").onclick = restart;
+$("chaosBtn").onclick = function () {
+  AH.spawn(24);
+  AH.beep();
+  AH.toast("真相是：这 18 题没有一题是能选对的");
+};
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>数论测试 · Anti-Human Tests</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="ahnav" id="ahNav"></nav>
+
+<div class="wrap">
+
+  <div class="warnline">⚠️ 仅供娱乐，请勿用于伪造真实崩溃日志 / 现实生活。</div>
+
+  <div class="card">
+    <h1 class="title-glitch" data-t="数论测试">数论测试</h1>
+    <p class="muted">7 道题，覆盖费马小定理、欧拉函数、中国剩余定理、裴蜀定理、Miller-Rabin 与卡迈克尔数、原根与阶、二次剩余与勒让德符号。</p>
+    <p>大部分题目要求你<b>直接填一个数字</b>。没有选项可以蒙，就像真实的数学一样不讲情面。</p>
+    <p class="small muted">所有解析都会给出完整的计算过程。你可以把它当成复习资料，也可以当成对自己的审讯记录。</p>
+    <div class="row">
+      <span class="badge">7 题计分</span>
+      <span class="badge ok">6 题填数字</span>
+      <span class="badge warn">1 题选择</span>
+      <span class="badge chaos">+1 道彩蛋题</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="qhead">
+      <span class="badge">进度</span>
+      <span class="badge ok">已答 <b id="doneN">0</b> / 7</span>
+      <span class="badge chaos">得分 <b id="scoreN">0</b></span>
+    </div>
+    <div class="prog"><i id="barI" style="width:0%"></i></div>
+    <p class="small muted mb12">提示：填数字时只填数字，别写单位，别写逗号，别写「大概」。数学不接受模棱两可。</p>
+  </div>
+
+  <div id="quiz"></div>
+
+  <div id="result"></div>
+
+  <div class="card danger mt12" id="bonusCard">
+    <div class="qhead">
+      <span class="badge chaos">彩蛋附加题（不计分）</span>
+      <span class="badge warn">纯属好玩</span>
+    </div>
+    <div class="qtext">计算 <b>2^64 mod 97</b>。一个真实存在的天文数字，压缩到一个区区两位数的余数上。</div>
+    <div class="row">
+      <input type="number" id="bonusIn" placeholder="输入你的答案">
+      <button class="btn" id="bonusBtn">提交</button>
+    </div>
+    <div id="bonusOut" class="mt12"></div>
+  </div>
+
+  <div class="card mt12">
+    <div class="qhead"><span class="badge chaos">大数游乐场</span><span class="badge warn">随机</span></div>
+    <p class="small muted">生成一个 20 位大数，我们用霍纳法（逐位取模）现场把它压缩成一个余数。这就是大数取模的全部秘密，没有别的。</p>
+    <div class="btnrow">
+      <button class="btn chaos" id="genBtn">🔢 生成一个 20 位大数让我算</button>
+      <button class="btn ghost" id="restartBtn">🔁 重新开始</button>
+      <button class="btn chaos" id="partyBtn">🎉 庆祝一下（会乱飞）</button>
+      <button class="btn danger" id="stopBtn">🛑 冷静模式（停止一切特效）</button>
+    </div>
+    <div class="term mt12" id="genOut"><span class="dim">// 点上面的按钮，大数会出现在这里。</span></div>
+  </div>
+
+</div>
+
+<div class="foot">
+  <p>Anti-Human Tests · 反人类测试系列 · <a href="../index.html">返回首页</a></p>
+  <p class="small">如果有人因为这个项目友尽，作者概不负责。</p>
+</div>
+
+<script src="../assets/chaos.js"></script>
+<script>
+AH.init({ title: "数论测试", page: "number-theory/" });
+
+(function () {
+  "use strict";
+
+  var TOTAL = 7;
+
+  // type: "num" 填数字，"mc" 单选
+  var QS = [
+    {
+      topic: "费马小定理 / 大数取模",
+      type: "num",
+      diff: "简单",
+      q: "计算 3^100 mod 7。",
+      ans: 4,
+      unit: "",
+      why:
+        "p = 7 是素数，且 gcd(3, 7) = 1，费马小定理给出 3^6 ≡ 1 (mod 7)。<br>" +
+        "把指数拆开：100 = 6 × 16 + 4，于是<br>" +
+        "3^100 = (3^6)^16 · 3^4 ≡ 1^16 · 81 ≡ 81 ≡ 4 (mod 7)。<br>" +
+        "注意 81 = 7 × 11 + 4。整个计算只需要一次幂运算，这就是费马小定理的实惠之处。"
+    },
+    {
+      topic: "欧拉函数",
+      type: "num",
+      diff: "中等",
+      q: "计算 φ(360)。",
+      ans: 96,
+      unit: "",
+      why:
+        "先质因数分解：360 = 2^3 × 3^2 × 5。<br>" +
+        "φ(n) = n · (1 − 1/p₁)(1 − 1/p₂)⋯，所以<br>" +
+        "φ(360) = 360 × (1 − 1/2) × (1 − 1/3) × (1 − 1/5) = 360 × 1/2 × 2/3 × 4/5 = 96。<br>" +
+        "顺便送一道脑筋题：有多少个 n 小于 100 使 φ(n) = n − 1？答案是 25——因为 φ(n) = n − 1 当且仅当 n 是素数（φ(n) = n − 1 意味着 1 到 n−1 全部与 n 互质），而 100 以内的素数正好 25 个。"
+    },
+    {
+      topic: "中国剩余定理",
+      type: "num",
+      diff: "中等",
+      q: "求下列同余方程组的最小正整数解 x：<br>x ≡ 2 (mod 3)，x ≡ 3 (mod 5)，x ≡ 2 (mod 7)。",
+      ans: 23,
+      unit: "",
+      why:
+        "模数 3、5、7 两两互质，乘积 105，所以解在模 105 下唯一。<br>" +
+        "先合并前两个条件：x ≡ 2 (mod 3) 且 x ≡ 2 (mod 7) 意味着 x ≡ 2 (mod 21)，写成 x = 2 + 21k。<br>" +
+        "代入第二个条件：2 + 21k ≡ 3 (mod 5)，而 21 ≡ 1 (mod 5)，所以 2 + k ≡ 3 (mod 5)，得 k ≡ 1 (mod 5)。<br>" +
+        "取 k = 1 得 x = 23。验算：23 mod 3 = 2，23 mod 5 = 3，23 mod 7 = 2，全部命中。"
+    },
+    {
+      topic: "gcd / 裴蜀定理",
+      type: "num",
+      diff: "简单",
+      q: "计算 gcd(1071, 462)。",
+      ans: 21,
+      unit: "",
+      why:
+        "欧几里得算法（辗转相除）：<br>" +
+        "1071 = 2 × 462 + 147<br>" +
+        "462 = 3 × 147 + 21<br>" +
+        "147 = 7 × 21 + 0<br>" +
+        "余数为 0 时，最后一个非零余数就是最大公约数，所以 gcd = 21。<br>" +
+        "顺带说，裴蜀定理保证存在整数 x、y 使 1071x + 462y = 21。把上面的式子倒着代回去得到 1071 × (−3) + 462 × 7 = 21，把 x 调整到最小正整数得 x = 19，此时 y = −44。"
+    },
+    {
+      topic: "素数判定 / Miller-Rabin",
+      type: "mc",
+      diff: "中等",
+      q: "最小的卡迈克尔数（Carmichael number，能骗过费马素性测试的合数）是哪一个？",
+      opts: ["341", "561", "1105", "1729"],
+      ans: 1,
+      why:
+        "561 = 3 × 11 × 17，它是最小的卡迈克尔数：对每一个与 561 互质的整数 a，都有 a^560 ≡ 1 (mod 561)，于是费马素性测试会被它稳定骗过。<br>" +
+        "其余选项：341 = 11 × 31 是最小的以 2 为底的费马伪素数（2^340 ≡ 1 mod 341），但它不是卡迈克尔数；1105 = 5 × 13 × 17 是第三个卡迈克尔数；1729 = 7 × 13 × 19 也是卡迈克尔数，同时是著名的「的士数」。<br>" +
+        "这就是 Miller-Rabin 存在的理由：它把费马测试升级成「取平方根时只能得到 ±1」，卡迈克尔数就骗不过去了。"
+    },
+    {
+      topic: "原根 / 阶",
+      type: "num",
+      diff: "中等",
+      q: "模 7 的最小原根（primitive root）是多少？",
+      ans: 3,
+      unit: "",
+      why:
+        "逐个检验阶（使 a^k ≡ 1 (mod 7) 的最小正整数 k）：<br>" +
+        "2：2¹=2，2²=4，2³=8≡1，阶是 3，不等于 φ(7)=6，不是原根。<br>" +
+        "3：3¹=3，3²=9≡2，3³=27≡6，3⁴=6×3=18≡4，3⁵=4×3=12≡5，3⁶=5×3=15≡1，阶是 6，正好等于 φ(7)，所以 3 是原根。<br>" +
+        "模 7 的原根共有 φ(φ(7)) = φ(6) = 2 个，它们是 3 和 5。"
+    },
+    {
+      topic: "二次剩余 / 勒让德符号",
+      type: "num",
+      diff: "较难",
+      q: "计算勒让德符号 (3 / 7) 的值（是二次剩余填 1，不是则填 -1）。",
+      ans: -1,
+      unit: "",
+      why:
+        "模 7 的二次剩余是 {1², 2², …, 6²} mod 7 = {1, 4, 2, 2, 4, 1} = {1, 2, 4}。3 不在其中，所以 (3/7) = −1。<br>" +
+        "用欧拉判别法验证：(3/7) ≡ 3^((7−1)/2) = 3³ = 27 ≡ 6 ≡ −1 (mod 7)，一致。<br>" +
+        "再顺手记一个常用结论：对奇素数 p，(2/p) = (−1)^((p²−1)/8)。p = 7 时指数为 (49−1)/8 = 6，(−1)^6 = 1，所以 2 是模 7 的二次剩余（3² = 9 ≡ 2，确实）。"
+    }
+  ];
+
+  var LETTER = "ABCD";
+  var DIFFCLS = { "简单": "ok", "中等": "warn", "较难": "bad" };
+
+  var quizEl = document.getElementById("quiz");
+  var resEl = document.getElementById("result");
+  var scoreEl = document.getElementById("scoreN");
+  var doneEl = document.getElementById("doneN");
+  var barEl = document.getElementById("barI");
+
+  var answered = 0;
+  var score = 0;
+
+  function verdictOf(s) {
+    if (s === TOTAL) {
+      return { t: "你是欧拉转世", cls: "ok", d: "全对。建议立刻去申请一个以你名字命名的函数，比如 φ_你(n)。" };
+    }
+    if (s === TOTAL - 1) {
+      return { t: "高斯会为你鼓掌", cls: "ok", d: "只差一点点。高斯会鼓掌，但只鼓两下，第三下他要留给自己。" };
+    }
+    if (s >= 4) {
+      return { t: "会算 gcd 的普通人", cls: "warn", d: "扎实但不惊艳。你的数学水平足以在面试里活下来，也足以在面试官追问「为什么」时开始喝水。" };
+    }
+    if (s >= 2) {
+      return { t: "建议先复习小学除法", cls: "bad", d: "辗转相除法的核心是「除」和「余」，建议从这两个字开始重新建立信心。" };
+    }
+    return { t: "你连质数都认不全", cls: "chaos", d: "0-1 分。没关系，质数也不认识你。从今天起，每天背一遍 30 以内的质数，两周后回来重考。" };
+  }
+
+  function updateStatus() {
+    scoreEl.textContent = String(score);
+    doneEl.textContent = String(answered);
+    barEl.style.width = (answered / TOTAL * 100) + "%";
+  }
+
+  function markRight(card, badgeWrap, q) {
+    score++;
+    badgeWrap.innerHTML = '<span class="badge ok">✅ 正确</span>';
+    AH.toast("对了，计算过程很干净", false);
+    AH.beep("ok");
+  }
+
+  function markWrong(card, badgeWrap, q, userText) {
+    badgeWrap.innerHTML = '<span class="badge bad">❌ 错误</span>' +
+      '<span class="badge warn">正确答案：' + q.ans + (q.unit || "") + '</span>';
+    AH.toast("错了。你写的是「" + userText + "」，标准答案是 " + q.ans, true);
+    AH.beep("bad");
+    AH.shake(true);
+    setTimeout(function () { AH.shake(false); }, 250);
+  }
+
+  function finish(card, badgeWrap, q, ok, userText) {
+    if (card.getAttribute("data-done") === "1") return;
+    card.setAttribute("data-done", "1");
+
+    if (ok) markRight(card, badgeWrap, q);
+    else markWrong(card, badgeWrap, q, userText);
+
+    answered++;
+    updateStatus();
+
+    var why = card.querySelector(".why");
+    why.classList.remove("hidden");
+    why.innerHTML = '<b>解法：</b><br>' + q.why;
+
+    if (answered === TOTAL) showResult();
+  }
+
+  function submitNum(qi, card, badgeWrap, input, btn) {
+    if (card.getAttribute("data-done") === "1") return;
+    var raw = (input.value || "").trim();
+    if (raw === "" || isNaN(Number(raw))) {
+      AH.toast("先填一个数字。空答案连错都算不上", true);
+      AH.beep("bad");
+      return;
+    }
+    input.disabled = true;
+    btn.disabled = true;
+    var val = Number(raw);
+    finish(card, badgeWrap, QS[qi], val === QS[qi].ans, raw);
+  }
+
+  function pickMc(qi, oi, card, badgeWrap, optsBox) {
+    if (card.getAttribute("data-done") === "1") return;
+    var q = QS[qi];
+    var btns = optsBox.querySelectorAll(".opt");
+    var i;
+    for (i = 0; i < btns.length; i++) {
+      btns[i].disabled = true;
+      if (i === q.ans) btns[i].classList.add("ok");
+    }
+    if (oi !== q.ans) btns[oi].classList.add("bad");
+    finish(card, badgeWrap, q, oi === q.ans, LETTER.charAt(oi));
+  }
+
+  function build() {
+    quizEl.innerHTML = "";
+    resEl.innerHTML = "";
+    answered = 0;
+    score = 0;
+
+    var qi, oi;
+    for (qi = 0; qi < QS.length; qi++) {
+      var q = QS[qi];
+      var card = document.createElement("div");
+      card.className = "card mt12";
+
+      var h = "";
+      h += '<div class="qhead">';
+      h += '<span class="badge">Q' + (qi + 1) + ' / ' + TOTAL + '</span>';
+      h += '<span class="badge ' + (DIFFCLS[q.diff] || "") + '">' + q.diff + '</span>';
+      h += '<span class="badge chaos">' + q.topic + '</span>';
+      h += '</div>';
+      h += '<div class="qtext">' + q.q + '</div>';
+
+      if (q.type === "num") {
+        h += '<div class="row">' +
+               '<input type="number" class="numIn" placeholder="输入一个数字">' +
+               '<button class="btn submitBtn">提交</button>' +
+             '</div>';
+      } else {
+        h += '<div class="opts"></div>';
+      }
+
+      h += '<div class="row mt12"><span class="badgeWrap"></span></div>';
+      h += '<div class="why hidden"></div>';
+      card.innerHTML = h;
+
+      var badgeWrap = card.querySelector(".badgeWrap");
+
+      if (q.type === "num") {
+        (function (index, c, bw) {
+          var input = c.querySelector(".numIn");
+          var btn = c.querySelector(".submitBtn");
+          btn.addEventListener("click", function () { submitNum(index, c, bw, input, btn); });
+          input.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") submitNum(index, c, bw, input, btn);
+          });
+        })(qi, card, badgeWrap);
+      } else {
+        var optsBox = card.querySelector(".opts");
+        for (oi = 0; oi < q.opts.length; oi++) {
+          (function (index) {
+            var b = document.createElement("button");
+            b.className = "opt";
+            b.innerHTML = '<span class="k">' + LETTER.charAt(index) + '</span>' + q.opts[index];
+            b.addEventListener("click", function () { pickMc(qi, index, card, badgeWrap, optsBox); });
+            optsBox.appendChild(b);
+          })(oi);
+        }
+      }
+
+      quizEl.appendChild(card);
+    }
+
+    updateStatus();
+  }
+
+  function showResult() {
+    var v = verdictOf(score);
+    resEl.innerHTML =
+      '<div class="card danger mt12">' +
+        '<div class="qhead">' +
+          '<span class="badge chaos">最终结算</span>' +
+          '<span class="badge ' + v.cls + '">' + v.t + '</span>' +
+        '</div>' +
+        '<div class="score">得分：' + score + ' / ' + TOTAL + '</div>' +
+        '<p class="muted">' + v.d + '</p>' +
+        '<div class="btnrow">' +
+          '<button class="btn" id="againBtn">🔁 再来一遍</button>' +
+          '<button class="btn chaos" id="againParty">🎉 庆祝一下（会乱飞）</button>' +
+        '</div>' +
+      '</div>';
+
+    document.getElementById("againBtn").addEventListener("click", function () {
+      build();
+      AH.toast("重开。这次请真的写下计算过程", false);
+    });
+    document.getElementById("againParty").addEventListener("click", party);
+
+    if (resEl.scrollIntoView) resEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function party() {
+    AH.spawn(20);
+    AH.beep("ok");
+    AH.toast(AH.pick(AH.MEMES.concat(["数学不会乱飞，但你会"])), false);
+  }
+
+  /* ---------- 彩蛋附加题：2^64 mod 97 ---------- */
+  function initBonus() {
+    var input = document.getElementById("bonusIn");
+    var btn = document.getElementById("bonusBtn");
+    var out = document.getElementById("bonusOut");
+
+    function go() {
+      var raw = (input.value || "").trim();
+      if (raw === "" || isNaN(Number(raw))) {
+        AH.toast("先填一个数字", true);
+        AH.beep("bad");
+        return;
+      }
+      input.disabled = true;
+      btn.disabled = true;
+      var ok = (Number(raw) === 61);
+      if (ok) {
+        AH.toast("彩蛋题也对了，你有点过分了", false);
+        AH.beep("ok");
+      } else {
+        AH.toast("彩蛋题错了，但彩蛋题不计分，这是它最后的温柔", true);
+        AH.beep("bad");
+      }
+      out.innerHTML =
+        (ok ? '<span class="badge ok">✅ 正确</span> ' : '<span class="badge bad">❌ 错误</span> <span class="badge warn">正确答案：61</span> ') +
+        '<div class="why" style="margin-top:12px">' +
+        '<b>解法（反复平方法）：</b><br>' +
+        '2^8 = 256 ≡ 62 (mod 97)<br>' +
+        '2^16 = 62² = 3844 = 97 × 39 + 61 ≡ 61 (mod 97)<br>' +
+        '2^32 = 61² = 3721 = 97 × 38 + 35 ≡ 35 (mod 97)<br>' +
+        '2^64 = 35² = 1225 = 97 × 12 + 61 ≡ <b>61</b> (mod 97)<br>' +
+        '所以 2^64 mod 97 = 61。顺带一个冷知识：2 模 97 的阶是 48（2^48 ≡ 1），而 64 = 48 + 16，于是 2^64 ≡ 2^16 ≡ 61，两条路殊途同归。' +
+        '</div>';
+    }
+
+    btn.addEventListener("click", go);
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") go(); });
+  }
+
+  /* ---------- 大数游乐场 ---------- */
+  var BIGPRIMES = [53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
+
+  function randomBig20() {
+    var s = String(AH.rnd(1, 9));
+    var i;
+    for (i = 0; i < 19; i++) s += String(AH.rnd(0, 9));
+    return s;
+  }
+
+  function primeFactors(n) {
+    var res = [];
+    var d = 2;
+    while (d * d <= n) {
+      while (n % d === 0) { res.push(d); n = n / d; }
+      d++;
+    }
+    if (n > 1) res.push(n);
+    return res;
+  }
+
+  function bigGen() {
+    var digits = randomBig20();
+    var m = AH.pick(BIGPRIMES);
+    var N = BigInt(digits);
+    var M = BigInt(m);
+    var r = N % M;
+    var q = N / M;
+
+    // 霍纳法逐位取模
+    var steps = [];
+    var acc = 0;
+    var i;
+    for (i = 0; i < digits.length; i++) {
+      acc = (acc * 10 + Number(digits.charAt(i))) % m;
+    }
+
+    var fac = primeFactors(m - 1);
+    var facStr = fac.length ? fac.join(" × ") : "1";
+    var exp = r === 0n ? "0" : "1 .. " + (m - 1);
+
+    var out = document.getElementById("genOut");
+    out.innerHTML =
+      '<span class="info">N =</span> ' + digits + '\n' +
+      '<span class="info">m =</span> ' + m + '（素数，φ(m) = ' + (m - 1) + ' = ' + facStr + '）\n' +
+      '<span class="dim">// 霍纳法逐位取模：r = (r × 10 + 当前位) mod m</span>\n' +
+      '<span class="dim">// 逐位推进 20 次后得到：</span>\n' +
+      '<span class="ok">N mod m =</span> <span class="chaos">' + r.toString() + '</span>\n' +
+      '<span class="dim">// 验算：N = q × m + r</span>\n' +
+      'q = ' + q.toString() + '\n' +
+      'q × ' + m + ' + ' + r.toString() + ' = N  ✓\n' +
+      '<span class="warn">// 由费马小定理，N^' + (m - 1) + ' ≡ 1 (mod ' + m + ')，所以任意指数都可以先对 ' + (m - 1) + ' 取模。</span>';
+
+    AH.spawn(6);
+    AH.beep("ok");
+    AH.toast("生成完毕：" + digits.slice(0, 6) + "… mod " + m + " = " + r.toString(), false);
+  }
+
+  document.getElementById("bonusBtn") && initBonus();
+  document.getElementById("genBtn").addEventListener("click", bigGen);
+  document.getElementById("restartBtn").addEventListener("click", function () {
+    build();
+    AH.toast("已重置。所有的余数都回到了起点", false);
+  });
+  document.getElementById("partyBtn").addEventListener("click", party);
+  document.getElementById("stopBtn").addEventListener("click", function () {
+    AH.stopAll();
+    AH.toast("冷静模式：特效已关闭，数学定理一条都没少", false);
+  });
+
+  build();
+})();
+</script>
+</body>
+</html>
